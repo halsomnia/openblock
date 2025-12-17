@@ -11,10 +11,13 @@
         .logo { font-size: 20px; font-weight: bold; color: #004d99; display: flex; align-items: center; }
         .doc-info { text-align: right; font-size: 14px; font-weight: bold; }
         h1 { text-align: center; font-size: 18px; margin-top: 5px; margin-bottom: 30px; }
-        .info-section div { margin: 4px 0; display: flex; align-items: center; }
+        .info-section div { margin: 4px 0; display: flex; align-items: flex-start; }
         .info-section label { width: 150px; font-weight: normal; }
         .info-section .separator { margin-right: 10px; width: 10px; text-align: center; }
-        .info-section select, .info-section input { flex-grow: 1; padding: 4px; border: 1px solid #ccc; }
+        .info-section select, .info-section input, .info-section textarea { 
+            flex-grow: 1; padding: 4px; border: 1px solid #ccc; font-family: Arial, sans-serif;
+        }
+        .info-section textarea { height: 80px; resize: vertical; }
         .piutang-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 30px; }
         .piutang-table th, .piutang-table td { border: 1px solid #000; padding: 8px 10px; text-align: center; font-size: 13px; height: 25px; }
         .piutang-table th { background-color: #e0e0e0; font-weight: bold; }
@@ -22,7 +25,7 @@
         .data-nominal { text-align: right !important; }
         .area-section { margin-bottom: 25px; border: 1px solid #000; }
         .area-section h3 { font-size: 14px; padding: 8px 10px; margin: 0; background-color: #e0e0e0; border-bottom: 1px solid #000; }
-        .area-box { height: 60px; padding: 5px; }
+        .area-box { height: 80px; padding: 10px; resize: vertical; border: none; width: 100%; font-family: Arial, sans-serif; }
         .closing { margin-top: 40px; font-size: 14px; text-align: justify; }
     </style>
 </head>
@@ -41,19 +44,28 @@
         <div class="info-section">
             <div><label>No Pelanggan</label><span class="separator">:</span><input type="text" id="noPelanggan"></div>
             <div><label>Nama Pelanggan</label><span class="separator">:</span>
-                <div style="position: relative; width: 100%;">
-                    <input type="text" id="searchPelanggan" placeholder="Ketik untuk mencari pelanggan..." style="width: 100%; padding: 4px; border: 1px solid #ccc; margin-bottom: 5px;">
-                    <select id="namaPelangganSelect" size="8" style="width: 100%; padding: 4px; border: 1px solid #ccc;">
-                        <option value="">-- Pilih Pelanggan --</option>
-                    </select>
-                </div>
+                <input type="text" list="daftarPelanggan" id="namaPelangganInput" placeholder="Ketik atau pilih nama pelanggan..." autocomplete="off">
+                <datalist id="daftarPelanggan"></datalist>
             </div>
             <div><label>Rata-rata Pembayaran</label><span class="separator">:</span><input type="text" id="rataPembayaran"></div>
-            <div><label>Cara Pembayaran</label><span class="separator">:</span><input type="text" id="caraPembayaran"></div>
-            <div><label>Pengajuan</label><span class="separator">:</span><input type="text" id="pengajuan"></div>
+            <div><label>Cara Pembayaran</label><span class="separator">:</span>
+                <select id="caraPembayaran">
+                    <option value="">-- Pilih Cara Pembayaran --</option>
+                    <option value="CASH">CASH</option>
+                    <option value="TRANSFER">TRANSFER</option>
+                    <option value="GIRO">GIRO</option>
+                </select>
+            </div>
+            <div><label>Pengajuan</label><span class="separator">:</span>
+                <select id="pengajuan">
+                    <option value="">-- Pilih Jenis Pengajuan --</option>
+                    <option value="OVERDUE">OVERDUE</option>
+                    <option value="OVERLIMIT">OVERLIMIT</option>
+                </select>
+            </div>
             <div><label>Alasan Pengajuan</label><span class="separator">:</span><input type="text" id="alasanPengajuan"></div>
             <div><label>Plafon Order</label><span class="separator">:</span><input type="text" id="plafonOrder"></div>
-            <div><label>Rencana Order</label><span class="separator">:</span><input type="text" id="rencanaOrder"></div>
+            <div><label>Rencana Order</label><span class="separator">:</span><input type="text" id="rencanaOrder" placeholder="Masukkan angka tanpa titik atau koma"></div>
             <div><label>Rencana Pembayaran</label><span class="separator">:</span><input type="text" id="rencanaPembayaran"></div>
         </div>
 
@@ -87,12 +99,12 @@
 
         <div class="area-section">
             <h3>Rekomendasi dari Tim Piutang</h3>
-            <div class="area-box"></div>
+            <textarea class="area-box" placeholder="Tulis rekomendasi di sini..."></textarea>
         </div>
 
         <div class="area-section">
             <h3>Persetujuan dari Area Sales Manager (ASM)</h3>
-            <div class="area-box"></div>
+            <textarea class="area-box" placeholder="Tulis persetujuan atau catatan di sini..."></textarea>
         </div>
         
         <div class="closing">
@@ -102,17 +114,42 @@
 
     <script>
         const pelangganCSV = 'data.csv';
-        const selectElement = document.getElementById('namaPelangganSelect');
-        const searchInput = document.getElementById('searchPelanggan');
+        const inputPelanggan = document.getElementById('namaPelangganInput');
+        const datalist = document.getElementById('daftarPelanggan');
+        const rencanaOrderInput = document.getElementById('rencanaOrder');
         let allPiutangData = [];
         let allPelangganNames = [];
 
-        // Format rupiah TANPA 2 digit desimal (hanya bilangan bulat dengan titik pemisah ribuan)
+        // Format rupiah tanpa desimal (bilangan bulat dengan titik ribuan)
         function formatRupiah(number) {
             let num = parseFloat(number);
             if (isNaN(num)) return '-';
             return Math.round(num).toLocaleString('id-ID');
         }
+
+        // Format input Rencana Order dengan prefix Rp dan titik ribuan
+        function formatRencanaOrder() {
+            let value = rencanaOrderInput.value.replace(/\D/g, ''); // Hanya angka
+            if (value === '') {
+                rencanaOrderInput.value = '';
+                return;
+            }
+            let formatted = parseInt(value).toLocaleString('id-ID');
+            rencanaOrderInput.value = formatted;
+        }
+
+        rencanaOrderInput.addEventListener('input', formatRencanaOrder);
+        rencanaOrderInput.addEventListener('blur', () => {
+            if (rencanaOrderInput.value !== '') {
+                rencanaOrderInput.value = 'Rp ' + rencanaOrderInput.value;
+            }
+        });
+        rencanaOrderInput.addEventListener('focus', () => {
+            if (rencanaOrderInput.value.startsWith('Rp ')) {
+                rencanaOrderInput.value = rencanaOrderInput.value.replace('Rp ', '').replace(/\./g, '');
+                formatRencanaOrder();
+            }
+        });
 
         async function loadPiutangData() {
             try {
@@ -142,36 +179,28 @@
                 });
 
                 allPelangganNames = [...uniqueNames].sort();
-                populateSelect(allPelangganNames);
+
+                datalist.innerHTML = '';
+                allPelangganNames.forEach(nama => {
+                    const option = document.createElement('option');
+                    option.value = nama;
+                    datalist.appendChild(option);
+                });
 
             } catch (error) {
                 console.error("Error:", error);
-                selectElement.innerHTML += '<option disabled>Gagal load data.csv - Buka via server!</option>';
+                alert('Gagal memuat data.csv. Pastikan file ada dan dibuka melalui server lokal atau GitHub Pages.');
             }
         }
 
-        function populateSelect(names) {
-            selectElement.innerHTML = '<option value="">-- Pilih Pelanggan --</option>';
-            names.forEach(nama => {
-                const option = document.createElement('option');
-                option.value = nama;
-                option.textContent = nama;
-                selectElement.appendChild(option);
-            });
-        }
-
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase().trim();
-            if (query === '') {
-                populateSelect(allPelangganNames);
+        function handleInput() {
+            const value = inputPelanggan.value.trim();
+            if (allPelangganNames.includes(value)) {
+                updatePiutangTable(value);
             } else {
-                const filtered = allPelangganNames.filter(nama => 
-                    nama.toLowerCase().includes(query)
-                );
-                populateSelect(filtered);
+                updatePiutangTable('');
             }
-            updatePiutangTable('');
-        });
+        }
 
         function updatePiutangTable(namaPelanggan) {
             document.getElementById('totalNominal').textContent = '-';
@@ -207,9 +236,8 @@
             document.getElementById('totalNominal').textContent = formatRupiah(totalPiutang);
         }
 
-        selectElement.addEventListener('change', (e) => {
-            updatePiutangTable(e.target.value);
-        });
+        inputPelanggan.addEventListener('input', handleInput);
+        inputPelanggan.addEventListener('change', handleInput);
 
         loadPiutangData();
     </script>
