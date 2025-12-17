@@ -32,7 +32,6 @@
         .pdf-button { background-color: #dc3545; }
         .print-button:hover { opacity: 0.9; }
         .error-border { border: 2px solid red !important; }
-        /* Style untuk teks hasil ekspor tanpa border */
         .export-text { padding: 4px 0; display: inline-block; border: none !important; }
     </style>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -256,16 +255,14 @@
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight(); // 297 mm untuk A4
+                const pdfHeight = pdf.internal.pageSize.getHeight();
                 const imgWidth = pdfWidth;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                // Hitung rasio scaling agar muat dalam 1 halaman (dengan sedikit margin atas/bawah)
                 const scaleRatio = pdfHeight / imgHeight;
-                const finalHeight = pdfHeight * scaleRatio * 0.98; // 98% untuk sedikit margin
+                const finalHeight = pdfHeight * scaleRatio * 0.98;
                 const finalWidth = imgWidth * scaleRatio * 0.98;
 
-                // Posisi tengah vertikal dan horizontal
                 const x = (pdfWidth - finalWidth) / 2;
                 const y = (pdfHeight - finalHeight) / 2;
 
@@ -314,7 +311,7 @@
                 rataPembayaranInput.value = (rataVal && rataVal !== '-') ? formatRupiah(rataVal) : '-';
                 updatePiutangTable(val);
             } else {
-                        noPelangganInput.value = '';
+                noPelangganInput.value = '';
                 rataPembayaranInput.value = '';
                 updatePiutangTable('');
             }
@@ -324,18 +321,28 @@
             const ids = ['nominal-1-30', 'nominal-30-60', 'nominal-61-90', 'nominal-over-120'];
             ids.forEach(id => document.getElementById(id).textContent = '');
             document.getElementById('totalNominal').textContent = '-';
+            
             if (!nama) return;
+
             const filtered = allPiutangData.filter(item => item.nama === nama);
             const cat = { '1-30': 0, '30-60': 0, '61-90': 0, '>120': 0 };
             let total = 0;
+
             filtered.forEach(item => {
                 total += item.nominal;
                 let age = item.umur;
-                if (age === '>120' || age === '91-120') age = '>120';
-                if (age in cat) cat[age] += item.nominal;
+                
+                if (age === '>120' || age === '91-120') {
+                    age = '>120';
+                }
+
+                if (cat.hasOwnProperty(age)) {
+                    cat[age] += item.nominal;
+                }
             });
+
             document.getElementById('nominal-1-30').textContent = formatRupiah(cat['1-30']);
-            document.getElementById('nominal20-60').textContent = formatRupiah(cat['30-60']);
+            document.getElementById('nominal-30-60').textContent = formatRupiah(cat['30-60']);
             document.getElementById('nominal-61-90').textContent = formatRupiah(cat['61-90']);
             document.getElementById('nominal-over-120').textContent = formatRupiah(cat['>120']);
             document.getElementById('totalNominal').textContent = formatRupiah(total);
@@ -357,4 +364,3 @@
     </script>
 </body>
 </html>
-
