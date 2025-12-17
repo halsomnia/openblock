@@ -143,10 +143,11 @@
         let nameToNoPelanggan = {};
         let nameToRataRata = {};
 
+        // Fungsi format Rupiah untuk tampilan data otomatis
         function formatRupiah(number) {
             let num = parseFloat(number);
             if (isNaN(num)) return '-';
-            return Math.round(num).toLocaleString('id-ID');
+            return 'Rp ' + Math.round(num).toLocaleString('id-ID');
         }
 
         function getFormattedDate() {
@@ -155,8 +156,6 @@
             return `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
         }
 
-        // --- VALIDASI DAN EKSPOR ---
-        
         async function prepareForExport() {
             const required = [inputPelanggan, rencanaOrderInput, rencanaPembayaranInput, caraPembayaranSelect, pengajuanSelect];
             required.forEach(el => el.classList.remove('error-border'));
@@ -249,8 +248,6 @@
             });
         }
 
-        // --- DATA LOADING ---
-
         async function loadPiutangData() {
             try {
                 const response = await fetch(pelangganCSV);
@@ -265,14 +262,15 @@
                     let nama = columns[0].trim().replace(/"/g, '');
                     let umur = columns[1].trim();
                     let noPel = columns[3].trim().replace(/"/g, '');
-                    let rata = columns[4].trim().replace(/"/g, ''); // Kolom ke-5 (index 4)
+                    let rataRaw = columns[4].trim().replace(/"/g, ''); 
                     const nominal = parseFloat(columns[2].trim().replace(/,/g, '.'));
 
                     if (nama && !isNaN(nominal)) {
                         allPiutangData.push({ nama, umur, nominal });
                         uniqueNames.add(nama);
                         if (!nameToNoPelanggan[nama]) nameToNoPelanggan[nama] = noPel;
-                        if (!nameToRataRata[nama]) nameToRataRata[nama] = rata;
+                        // Simpan nilai rata-rata mentah untuk diformat nanti
+                        if (!nameToRataRata[nama]) nameToRataRata[nama] = rataRaw;
                     }
                 });
 
@@ -289,7 +287,9 @@
             const val = inputPelanggan.value.trim();
             if (allPelangganNames.includes(val)) {
                 noPelangganInput.value = nameToNoPelanggan[val] || '';
-                rataPembayaranInput.value = nameToRataRata[val] || '-'; // Isi otomatis rata-rata
+                // Format rata-rata pembayaran dengan Rp dan titik
+                const rataVal = nameToRataRata[val];
+                rataPembayaranInput.value = (rataVal && rataVal !== '-') ? formatRupiah(rataVal) : '-';
                 updatePiutangTable(val);
             } else {
                 noPelangganInput.value = '';
@@ -319,7 +319,7 @@
             document.getElementById('totalNominal').textContent = formatRupiah(total);
         }
 
-        // Format Rupiah untuk Rencana Order
+        // Format Rupiah manual untuk input Rencana Order
         rencanaOrderInput.addEventListener('input', function() {
             let value = this.value.replace(/\D/g, '');
             this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
