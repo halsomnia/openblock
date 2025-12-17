@@ -1,301 +1,148 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FORM OPEN BLOCK - PT. NUSA SARANA INDONESIA</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sales</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+	<link rel="icon" type="image/png" href="favicon.png">
+
     <style>
-        body { font-family: 'DM Sans', sans-serif; margin: 0; padding: 30px; background-color: #f4f4f4; }
-        .container { width: 800px; margin: 0 auto; background-color: white; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .logo { font-size: 20px; font-weight: bold; color: #004d99; display: flex; align-items: center; }
-        .doc-info { text-align: right; font-size: 14px; font-weight: bold; }
-        
-        /* Judul dibuat lebih besar dan bold */
-        h1 { 
-            text-align: center; 
-            font-size: 28px; 
-            font-weight: 800; 
-            margin-top: 10px; 
-            margin-bottom: 35px; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .info-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .info-row { display: flex; align-items: center; }
-        .info-section label { width: 180px; font-weight: normal; white-space: nowrap; flex-shrink: 0; }
-        .info-section .separator { margin: 0 10px; width: 10px; text-align: center; flex-shrink: 0; }
-        .info-section select, .info-section input { 
-            flex-grow: 1; padding: 6px; border: 1px solid #ccc; font-family: 'DM Sans', sans-serif; transition: border-color 0.3s;
+        body{
+            margin:0;
+            font-family:'DM Sans', sans-serif;
+            background:#fff;
+            color:#000000;
         }
 
-        .piutang-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 30px; }
-        .piutang-table th, .piutang-table td { border: 1px solid #000; padding: 8px 10px; text-align: center; font-size: 13px; height: 25px; }
-        .piutang-table th { background-color: #e0e0e0; font-weight: bold; }
-        .piutang-table .total-row td { font-weight: bold; text-align: center; background-color: #e0e0e0; padding: 8px 10px; }
-        .data-nominal { text-align: right !important; }
+        /* HEADER */
+        .header{
+            background:#000;
+            color:#fff;
+            /* UBAH PADDING AGAR HEADER TIDAK TERLALU BESAR SETELAH JUDUL DIPERSINGKAT */
+            padding:40px 30px; 
+        }
 
-        .area-section { margin-bottom: 25px; border: 1px solid #000; }
-        .area-section h3 { font-size: 14px; padding: 8px 10px; margin: 0; background-color: #e0e0e0; border-bottom: 1px solid #000; }
-        .area-box { height: 80px; padding: 10px; resize: vertical; border: none; width: 100%; box-sizing: border-box; font-family: 'DM Sans', sans-serif; }
+        .header h1{
+            margin:0;
+            font-size:2.1em; 
+            font-weight:700;
+        }
+
+        /* SECTIONS (diubah menjadi list item) */
+        .list-section {
+            padding: 0 30px;
+            list-style: none;
+        }
         
-        .closing { margin-top: 40px; font-size: 14px; text-align: justify; }
-        .footer-actions { margin-top: 20px; text-align: left; }
-        .save-button { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
-        .save-button:hover { background-color: #1e7e34; }
-        .error-border { border: 2px solid red !important; }
+        /* Container untuk setiap item */
+        .list-item {
+            display: flex; 
+            /* MIDDLE ALIGN (CENTER) untuk item satu baris */
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 16px 0; 
+            border-bottom: 1px solid #e0e0e0; 
+        }
+        
+        .list-item:first-child {
+            border-top: 1px solid #e0e0e0; 
+        }
+        
+        /* Hapus style untuk title dan desc karena button 3 dihapus */
+        .title, .desc {
+            display: none; 
+        }
+        
+        .list-item-content {
+            flex-grow: 1; 
+            padding-right: 15px; 
+        }
+        
+        /* Link di dalam list item */
+        .list-item a.link {
+            color: #000000;
+            text-decoration: none;
+            font-size: 1.2em; 
+            font-weight: 500;
+            display: block;
+        }
+        
+        /* Tombol panah (Arrow Button) - Ukuran seragam 40x40px */
+        .arrow-btn {
+            background: #e0e0e0; 
+            border-radius: 50%; 
+            width: 40px; 
+            min-width: 40px; 
+            height: 40px;
+            min-height: 40px; 
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            margin-left: 15px;
+            
+            font-size: 1.2em;
+            color: #000000;
+        }
+
+        .arrow-btn:hover {
+            background: #cccccc; 
+        }
+        
+        /* Hide the original .btn */
+        .btn {
+            display: none !important;
+        }
+
+        /* Media Query untuk Mobile */
+        @media(max-width:500px){
+            .header {
+                padding: 30px 20px; /* Kurangi padding header di mobile */
+            }
+            .header h1{
+                font-size:1.9em;
+            }
+            .list-section {
+                padding: 0 20px;
+            }
+            .list-item a.link{
+                font-size:1.1em;
+            }
+            
+            /* Tombol panah di mobile tetap 40px */
+            .arrow-btn {
+                width: 40px;
+                min-width: 40px;
+                height: 40px;
+                min-height: 40px;
+            }
+        }
     </style>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
-    <div class="container" id="formContainer">
-        <div class="header">
-            <div class="logo">PT. NUSA SARANA INDONESIA</div>
-            <div class="doc-info">NSI-F-MKT-002</div>
-        </div>
-        
-        <h1>FORM OPEN BLOCK</h1>
-
-        <p style="font-size: 14px; margin-bottom: 20px;">Permohonan open block order, dengan ini kami lampirkan data toko:</p>
-
-        <div class="info-section">
-            <div class="info-row"><label>No Pelanggan</label><span class="separator">:</span><input type="text" id="noPelanggan" readonly style="background-color: #f0f0f0;"></div>
-            <div class="info-row"><label>Nama Pelanggan</label><span class="separator">:</span>
-                <input type="text" list="daftarPelanggan" id="namaPelangganInput" placeholder="Ketik atau pilih nama pelanggan..." autocomplete="off">
-            </div>
-            <div class="info-row"><label>Rata-rata Pembayaran</label><span class="separator">:</span><input type="text" id="rataPembayaran" readonly style="background-color: #f0f0f0;"></div>
-
-            <div class="info-row"><label>Cara Pembayaran</label><span class="separator">:</span>
-                <select id="caraPembayaran">
-                    <option value="">-- Pilih Cara Pembayaran --</option>
-                    <option value="CASH">CASH</option>
-                    <option value="TRANSFER">TRANSFER</option>
-                    <option value="GIRO">GIRO</option>
-                </select>
-            </div>
-            <div class="info-row"><label>Pengajuan</label><span class="separator">:</span>
-                <select id="pengajuan">
-                    <option value="">-- Pilih Jenis Pengajuan --</option>
-                    <option value="OVERDUE">OVERDUE</option>
-                    <option value="OVERLIMIT">OVERLIMIT</option>
-                </select>
-            </div>
-            <div class="info-row"><label>Alasan Pengajuan</label><span class="separator">:</span><input type="text" id="alasanPengajuan"></div>
-
-            <div class="info-row"><label>Plafon Order</label><span class="separator">:</span><input type="text" id="plafonOrder"></div>
-            <div class="info-row"><label>Rencana Order</label><span class="separator">:</span><input type="text" id="rencanaOrder" placeholder="Masukkan angka tanpa titik atau koma"></div>
-            <div class="info-row"><label>Rencana Pembayaran</label><span class="separator">:</span><input type="text" id="rencanaPembayaran"></div>
-        </div>
-
-        <h3 style="margin-top: 25px; font-size: 14px;">Data Piutang toko:</h3>
-        <table class="piutang-table">
-            <thead>
-                <tr>
-                    <th style="width: 10%;">No Faktur</th>
-                    <th style="width: 10%;">Tgl Faktur</th>
-                    <th style="width: 15%;">Umur Piutang</th>
-                    <th style="width: 20%;">Nominal</th>
-                    <th style="width: 15%;">Outstanding</th>
-                    <th style="width: 15%;">TOP</th>
-                    <th style="width: 15%;">Jatuh Tempo</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td></td><td></td><td>1-30</td><td id="nominal-1-30" class="data-nominal"></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td>30-60</td><td id="nominal-30-60" class="data-nominal"></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td>61-90</td><td id="nominal-61-90" class="data-nominal"></td><td></td><td></td><td></td></tr>
-                <tr><td></td><td></td><td>>120</td><td id="nominal-over-120" class="data-nominal"></td><td></td><td></td><td></td></tr>
-            </tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td colspan="3" style="text-align: right; padding-right: 15px;">Total</td>
-                    <td id="totalNominal" class="data-nominal">-</td>
-                    <td colspan="3"></td>
-                </tr>
-            </tfoot>
-        </table>
-
-        <div class="area-section">
-            <h3>Rekomendasi dari Tim Piutang</h3>
-            <textarea class="area-box" placeholder="Tulis rekomendasi di sini..."></textarea>
-        </div>
-
-        <div class="area-section">
-            <h3>Persetujuan dari Area Sales Manager (ASM)</h3>
-            <textarea class="area-box" placeholder="Tulis persetujuan atau catatan di sini..."></textarea>
-        </div>
-        
-        <div class="closing">
-            <p style="margin-bottom: 20px;">Demikian permohonan ini kami ajukan, mohon persetujuannya. Terima kasih.</p>
-            <p style="font-size: 14px;"><em id="tanggalPengajuan">Pengajuan ini dibuat dan dari data per tanggal ...</em></p>
-        </div>
+    <div class="header">
+        <h1>Supervisor</h1>
     </div>
-
-    <div class="footer-actions">
-        <button class="save-button" onclick="saveAsJpg()">Simpan JPG</button>
-    </div>
-
-    <datalist id="daftarPelanggan"></datalist>
-
-    <script>
-        const pelangganCSV = 'data.csv';
-        const inputPelanggan = document.getElementById('namaPelangganInput');
-        const noPelangganInput = document.getElementById('noPelanggan');
-        const rataPembayaranInput = document.getElementById('rataPembayaran');
-        const datalist = document.getElementById('daftarPelanggan');
-        const rencanaOrderInput = document.getElementById('rencanaOrder');
-        const tanggalPengajuanElement = document.getElementById('tanggalPengajuan');
+    
+    <ul class="list-section">
         
-        let allPiutangData = [];
-        let allPelangganNames = [];
-        let nameToInfo = {};
+        <li class="list-item">
+            <div class="list-item-content">
+                <a class="link" href="openblock.html">
+                    Form Open Block
+                </a>
+            </div>
+            <a href="openblock.html" class="arrow-btn">&#x2794;</a>
+        </li>
 
-        function formatRupiah(number) {
-            let num = parseFloat(number);
-            if (isNaN(num)) return '-';
-            return 'Rp ' + Math.round(num).toLocaleString('id-ID');
-        }
+    </ul>
 
-        rencanaOrderInput.addEventListener('input', function() {
-            let value = this.value.replace(/\D/g, '');
-            this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
-        });
-        rencanaOrderInput.addEventListener('blur', function() {
-            if (this.value && !this.value.startsWith('Rp ')) this.value = 'Rp ' + this.value;
-        });
-        rencanaOrderInput.addEventListener('focus', function() {
-            this.value = this.value.replace('Rp ', '').replace(/\./g, '');
-        });
-
-        async function loadPiutangData() {
-            try {
-                const response = await fetch(pelangganCSV);
-                const csvText = await response.text();
-                const rows = csvText.trim().split('\n').slice(1);
-
-                const uniqueNames = new Set();
-                rows.forEach(row => {
-                    const columns = row.split(';');
-                    if (columns.length < 5) return;
-
-                    let nama = columns[0].trim().replace(/"/g, '');
-                    let umur = columns[1].trim();
-                    let nominal = parseFloat(columns[2].trim().replace(/,/g, '.'));
-                    let noPel = columns[3].trim().replace(/"/g, '');
-                    let rataBayarVal = parseFloat(columns[4].trim().replace(/"/g, ''));
-                    let rataBayarFormatted = !isNaN(rataBayarVal) ? formatRupiah(rataBayarVal) : '-';
-
-                    if (nama && !isNaN(nominal)) {
-                        allPiutangData.push({ nama, umur, nominal });
-                        uniqueNames.add(nama);
-                        if (!nameToInfo[nama]) {
-                            nameToInfo[nama] = { noPel, rataBayar: rataBayarFormatted };
-                        }
-                    }
-                });
-
-                allPelangganNames = [...uniqueNames].sort();
-                allPelangganNames.forEach(nama => {
-                    const option = document.createElement('option');
-                    option.value = nama;
-                    datalist.appendChild(option);
-                });
-            } catch (error) { console.error("Error loading CSV:", error); }
-        }
-
-        function handleInput() {
-            const val = inputPelanggan.value.trim();
-            if (nameToInfo[val]) {
-                noPelangganInput.value = nameToInfo[val].noPel;
-                rataPembayaranInput.value = nameToInfo[val].rataBayar;
-                updatePiutangTable(val);
-            } else {
-                noPelangganInput.value = '';
-                rataPembayaranInput.value = '';
-                updatePiutangTable('');
-            }
-        }
-
-        function updatePiutangTable(namaPelanggan) {
-            const categories = ['1-30', '30-60', '61-90', '>120'];
-            categories.forEach(cat => document.getElementById(`nominal-${cat === '>120' ? 'over-120' : cat}`).textContent = '');
-            document.getElementById('totalNominal').textContent = '-';
-
-            if (!namaPelanggan) return;
-
-            const filtered = allPiutangData.filter(item => item.nama === namaPelanggan);
-            let totals = { '1-30': 0, '30-60': 0, '61-90': 0, '>120': 0 };
-            let grandTotal = 0;
-
-            filtered.forEach(item => {
-                if (totals.hasOwnProperty(item.umur)) {
-                    totals[item.umur] += item.nominal;
-                    grandTotal += item.nominal;
-                }
-            });
-
-            categories.forEach(cat => {
-                let val = totals[cat];
-                document.getElementById(`nominal-${cat === '>120' ? 'over-120' : cat}`).textContent = val !== 0 ? Math.round(val).toLocaleString('id-ID') : '';
-            });
-            document.getElementById('totalNominal').textContent = grandTotal !== 0 ? Math.round(grandTotal).toLocaleString('id-ID') : '-';
-        }
-
-        function saveAsJpg() {
-            const required = ['namaPelangganInput', 'rencanaOrder', 'rencanaPembayaran', 'caraPembayaran', 'pengajuan'];
-            let valid = true;
-            required.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el.value || el.value.includes('-- Pilih')) {
-                    el.classList.add('error-border');
-                    valid = false;
-                } else {
-                    el.classList.remove('error-border');
-                }
-            });
-
-            if (!valid) {
-                alert('Data Belum Lengkap!');
-                return;
-            }
-
-            const container = document.getElementById('formContainer');
-            const footer = document.querySelector('.footer-actions');
-            footer.style.display = 'none';
-
-            const inputs = container.querySelectorAll('input, select, textarea');
-            const backups = [];
-            inputs.forEach(el => {
-                const span = document.createElement('span');
-                span.textContent = el.value;
-                span.style.padding = '4px 0';
-                span.style.display = 'inline-block';
-                el.parentElement.replaceChild(span, el);
-                backups.push({el, span});
-            });
-
-            html2canvas(container, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
-                backups.forEach(b => b.span.parentElement.replaceChild(b.el, b.span));
-                footer.style.display = 'block';
-                const link = document.createElement('a');
-                link.download = `FORM_OPEN_BLOCK_${noPelangganInput.value || 'DATA'}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-                alert('File tersimpan ke galeri Anda.');
-            });
-        }
-
-        function setDate() {
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            tanggalPengajuanElement.innerHTML = `<em>Pengajuan ini dibuat dan dari data per tanggal ${new Date().toLocaleDateString('id-ID', options)}</em>`;
-        }
-
-        inputPelanggan.addEventListener('input', handleInput);
-        loadPiutangData();
-        setDate();
-    </script>
 </body>
 </html>
