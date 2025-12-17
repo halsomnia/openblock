@@ -13,7 +13,6 @@
         .doc-info { text-align: right; font-size: 14px; font-weight: bold; }
         h1 { text-align: center; font-size: 18px; margin-top: 5px; margin-bottom: 30px; }
         
-        /* Layout Info Section */
         .info-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .info-row { display: flex; align-items: center; }
         .info-section label { width: 180px; font-weight: normal; white-space: nowrap; flex-shrink: 0; }
@@ -22,14 +21,12 @@
             flex-grow: 1; padding: 4px; border: 1px solid #ccc; font-family: 'DM Sans', sans-serif; transition: border-color 0.3s;
         }
 
-        /* Tabel Piutang */
         .piutang-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 30px; }
         .piutang-table th, .piutang-table td { border: 1px solid #000; padding: 8px 10px; text-align: center; font-size: 13px; height: 25px; }
         .piutang-table th { background-color: #e0e0e0; font-weight: bold; }
         .piutang-table .total-row td { font-weight: bold; text-align: center; background-color: #e0e0e0; padding: 8px 10px; }
         .data-nominal { text-align: right !important; }
 
-        /* Textarea Sections */
         .area-section { margin-bottom: 25px; border: 1px solid #000; }
         .area-section h3 { font-size: 14px; padding: 8px 10px; margin: 0; background-color: #e0e0e0; border-bottom: 1px solid #000; }
         .area-box { height: 80px; padding: 10px; resize: vertical; border: none; width: 100%; box-sizing: border-box; font-family: 'DM Sans', sans-serif; }
@@ -144,15 +141,16 @@
         
         let allPiutangData = [];
         let allPelangganNames = [];
-        let nameToInfo = {}; // Objek untuk menyimpan No Pelanggan & Rata-rata Pembayaran
+        let nameToInfo = {};
 
+        // Fungsi format Rupiah umum (tanpa desimal)
         function formatRupiah(number) {
             let num = parseFloat(number);
             if (isNaN(num)) return '-';
-            return Math.round(num).toLocaleString('id-ID');
+            return 'Rp ' + Math.round(num).toLocaleString('id-ID');
         }
 
-        // Logic Rencana Order Rupiah
+        // Event listener Rencana Order
         rencanaOrderInput.addEventListener('input', function() {
             let value = this.value.replace(/\D/g, '');
             this.value = value ? parseInt(value).toLocaleString('id-ID') : '';
@@ -179,13 +177,19 @@
                     let umur = columns[1].trim();
                     let nominal = parseFloat(columns[2].trim().replace(/,/g, '.'));
                     let noPel = columns[3].trim().replace(/"/g, '');
-                    let rataBayar = columns[4].trim().replace(/"/g, '');
+                    
+                    // Ambil data rata-rata pembayaran dari kolom ke-5
+                    let rataBayarRaw = columns[4].trim().replace(/"/g, '');
+                    let rataBayarVal = parseFloat(rataBayarRaw);
+                    
+                    // Format langsung menjadi Rp dan titik ribuan tanpa desimal
+                    let rataBayarFormatted = !isNaN(rataBayarVal) ? formatRupiah(rataBayarVal) : '-';
 
                     if (nama && !isNaN(nominal)) {
                         allPiutangData.push({ nama, umur, nominal });
                         uniqueNames.add(nama);
                         if (!nameToInfo[nama]) {
-                            nameToInfo[nama] = { noPel, rataBayar };
+                            nameToInfo[nama] = { noPel, rataBayar: rataBayarFormatted };
                         }
                     }
                 });
@@ -231,9 +235,11 @@
             });
 
             categories.forEach(cat => {
-                document.getElementById(`nominal-${cat === '>120' ? 'over-120' : cat}`).textContent = formatRupiah(totals[cat]);
+                // Menampilkan nominal di tabel (tetap menggunakan format ribuan)
+                let val = totals[cat];
+                document.getElementById(`nominal-${cat === '>120' ? 'over-120' : cat}`).textContent = val !== 0 ? Math.round(val).toLocaleString('id-ID') : '';
             });
-            document.getElementById('totalNominal').textContent = formatRupiah(grandTotal);
+            document.getElementById('totalNominal').textContent = grandTotal !== 0 ? Math.round(grandTotal).toLocaleString('id-ID') : '-';
         }
 
         function saveAsJpg() {
@@ -258,7 +264,6 @@
             const footer = document.querySelector('.footer-actions');
             footer.style.display = 'none';
 
-            // Swap inputs for clean JPG
             const inputs = container.querySelectorAll('input, select, textarea');
             const backups = [];
             inputs.forEach(el => {
