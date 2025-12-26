@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Daftar Laporan</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'DM Sans', sans-serif;
+            background: #ffffff;
+            color: #000000;
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Mengunci tinggi layar agar scroll bekerja di area list */
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            background: #000;
+            color: #fff;
+            padding: 30px 20px; 
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em; 
+            font-weight: 700;
+        }
+
+        /* CONTAINER LIST DENGAN SCROLL */
+        .scroll-container {
+            flex-grow: 1;
+            overflow-y: auto; /* Mengaktifkan scroll ke bawah */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .list-section {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        
+        .list-item {
+            border-bottom: 1px solid #eeeeee; 
+        }
+
+        /* Satu baris berfungsi sebagai button */
+        .list-item a {
+            display: block;
+            padding: 12px 20px; /* Padding diperkecil agar baris lebih tipis */
+            text-decoration: none;
+            color: #000000;
+            font-size: 1em; 
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .list-item a:active {
+            background: #f4f4f4; /* Efek tekan pada ponsel */
+        }
+        
+        .list-item:first-child {
+            border-top: 1px solid #eeeeee; 
+        }
+
+        @media(max-width:500px){
+            .header {
+                padding: 25px 20px; 
+            }
+            .header h1 {
+                font-size: 1.6em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Daftar Laporan</h1>
+    </div>
+    
+    <div class="scroll-container">
+        <ul class="list-section">
+            
+            <li class="list-item">
+                <a href="penjualan_pembayaran.html">
+                    Penjualan & Pembayaran Harian
+                </a>
+            </li>
+		
+            <li class="list-item">
+                <a href="penjualan_pelanggan.html">
+                    Penjualan Per Pelanggan
+                </a>
+            </li>		
+
+        </ul>
+    </div>
+
+</body>
+</html>
