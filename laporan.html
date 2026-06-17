@@ -374,24 +374,26 @@
             <div class="modal-body" id="modal-body-content">
                 <div class="profile-card">
                     <div style="grid-column: span 2;">
+                        <div class="profile-label">Pelanggan</div>
+                        <div id="p-pelanggan" class="profile-value">-</div>
+                    </div>
+                    <div style="grid-column: span 2;">
                         <div class="profile-label">Alamat</div>
                         <div id="p-alamat" class="profile-value">-</div>
                     </div>
-                    <div>
-                        <div class="profile-label">Kota</div>
-                        <div id="p-kota" class="profile-value">-</div>
-                    </div>
-                    <div>
-                        <div class="profile-label">Day</div>
-                        <div id="p-day" class="profile-value" style="color:#d32f2f; font-weight:700;">-</div>
-                    </div>
-                    <div>
-                        <div class="profile-label">SPV</div>
-                        <div id="p-spv" class="profile-value">-</div>
-                    </div>
-                    <div>
-                        <div class="profile-label">Sales</div>
-                        <div id="p-sales" class="profile-value">-</div>
+                    <div style="grid-column: span 2; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 8px;">
+                        <div>
+                            <div class="profile-label">Day</div>
+                            <div id="p-day" class="profile-value" style="color:#d32f2f; font-weight:700;">-</div>
+                        </div>
+                        <div>
+                            <div class="profile-label">SPV</div>
+                            <div id="p-spv" class="profile-value">-</div>
+                        </div>
+                        <div>
+                            <div class="profile-label">Sales</div>
+                            <div id="p-sales" class="profile-value">-</div>
+                        </div>
                     </div>
                 </div>
                 <div class="table-wrapper" id="modal-table-content"></div>
@@ -645,17 +647,18 @@
 
 	function showDetail(nama) {
 		const profil = DATA_STORE.masterPelanggan.find(p => p.Pelanggan === nama);
+		document.getElementById('p-pelanggan').innerText = nama;
 		document.getElementById('p-alamat').innerText = profil ? (profil.Alamat || "-") : "-";
-		document.getElementById('p-kota').innerText = profil ? (profil.Kota || "-") : "-";
 		document.getElementById('p-day').innerText = profil ? (profil.Day || "-") : "-";
 		document.getElementById('p-spv').innerText = profil ? (profil.SPV || "-") : "-";
 		document.getElementById('p-sales').innerText = profil ? (profil.Sales || "-") : "-";
 
 		const det = DATA_STORE.aging.filter(d => d.PELANGGAN === nama);
-		let total = 0, html = `<table><thead><tr><th>No Faktur</th><th class="text-center">Tgl Faktur</th><th class="text-center">Tgl Cek</th><th class="text-right">Jumlah</th></tr></thead><tbody>`;
+		let total = 0, html = `<table><thead><tr><th>No Faktur</th><th class="text-center">Tgl Faktur</th><th class="text-center">Umur</th><th class="text-right">Jumlah</th></tr></thead><tbody>`;
 		det.forEach(d => {
 			total += (parseFloat(d.JUMLAH) || 0);
-			html += `<tr><td>${d["NO FAKTUR"] || "-"}</td><td class="text-center">${fd(d["TGL FAKTUR"])}</td><td class="text-center">${fd(d["TGL CEK"])}</td><td class="text-right">${fmt(d.JUMLAH)}</td></tr>`;
+			const u = parseInt(d.UMUR) || 0;
+			html += `<tr><td>${d["NO FAKTUR"] || "-"}</td><td class="text-center">${fd(d["TGL FAKTUR"])}</td><td class="text-center ${u>=120?'text-red text-bold':''}">${u}</td><td class="text-right">${fmt(d.JUMLAH)}</td></tr>`;
 		});
 		html += `</tbody><tfoot><tr class="row-total"><td colspan="3">TOTAL PIUTANG</td><td class="text-right">${fmt(total)}</td></tr></tfoot></table>`;
 		document.getElementById('modal-title').innerText = nama;
