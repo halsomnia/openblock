@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cari Toko NSI</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root { --primary: #2563eb; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #f8fafc;
+      color: #1e2937;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .app { display: flex; height: 100vh; }
+    .sidebar {
+      width: 100%;
+      max-width: 380px;
+      background: white;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+    }
+    .header { padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+    h1 { font-size: 22px; font-weight: 600; }
+    .subtitle { font-size: 13px; color: #64748b; }
+    .search-box { padding: 12px 20px; background: white; border-bottom: 1px solid #e2e8f0; position: relative; }
+    #search {
+      width: 100%;
+      padding: 14px 20px 14px 48px;
+      font-size: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 9999px;
+    }
+    .suggestions {
+      position: absolute;
+      top: 68px;
+      left: 20px;
+      right: 20px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      max-height: 340px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .suggestion-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: #f1f5f9; }
+    #results { flex: 1; overflow-y: auto; padding: 8px; }
+    .toko-item { padding: 14px 18px; margin: 6px 8px; border-radius: 12px; cursor: pointer; }
+    .toko-item:hover { background: #f1f5f9; }
+    #map { flex: 1; }
+
+    /* Loading */
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(248, 250, 252, 0.95);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 5px solid #e2e8f0;
+      border-top: 5px solid var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-bar {
+      width: 260px;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .progress {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar">
+      <div class="header">
+        <h1>Cari Toko NSI</h1>
+        <p class="subtitle">Pilih produk atau ketik manual</p>
+      </div>
+      <div class="search-box">
+        <div style="position:relative;">
+          <span style="position:absolute;left:34px;top:28px;color:#64748b;">🔍</span>
+          <input type="text" id="search" placeholder="Ketik nama toko atau produk..." autocomplete="off">
+          <div id="suggestions" class="suggestions"></div>
+        </div>
+      </div>
+      <div id="results"></div>
+    </div>
+    <div id="map"></div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p id="loadingText">Memuat daftar produk...</p>
+    <div class="progress-bar"><div id="progress" class="progress"></div></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map, markers = [];
+    let allData = [];
+    let productList = [
+      "CAT KAYU", "CG TAMITEX", "COLORTONE", "CT APOLLO",
+      "CT TAMITEX", "CT VINOTEX", "KEM-TONE", "SPECTRUM",
+      "SPECTRUM AEROSOL", "SPECTRUM ECO", "ULTRASHIELD",
+      "WALL FILLER", "WP SPECTRUM"
+    ];
+
+    function initMap() {
+      map = L.map('map').setView([-6.92, 107.61], 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    }
+
+    async function loadData() {
+      const overlay = document.getElementById('loadingOverlay');
+      const progressBar = document.getElementById('progress');
+      const loadingText = document.getElementById('loadingText');
+      
+      overlay.style.display = 'flex';
+      
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += 22 + Math.random() * 18;
+        if (progress > 95) progress = 95;
+        progressBar.style.width = progress + '%';
+      }, 65); // Dipercepat
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbw6VkzkHTAhyCGlmEBK_WaSO3DVzJGF3Vl95k8MTCtDIsa_zsZ1C0FBHAte74Lj7EEb2Q/exec");
+        allData = await res.json();
+        
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+        loadingText.textContent = "Data siap ✅";
+        
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          showSuggestions(productList);
+        }, 280); // Cepat hilang
+      } catch (e) {
+        clearInterval(progressInterval);
+        loadingText.textContent = "Gagal memuat data";
+      }
+    }
+
+    function showSuggestions(products) {
+      const suggestionsDiv = document.getElementById('suggestions');
+      let html = '';
+      products.forEach(prod => {
+        html += `<div class="suggestion-item" onclick="selectProduct('${prod}')">${prod}</div>`;
+      });
+      suggestionsDiv.innerHTML = html;
+      suggestionsDiv.style.display = 'block';
+    }
+
+    function selectProduct(produk) {
+      document.getElementById('search').value = produk;
+      document.getElementById('suggestions').style.display = 'none';
+      cariProduk();
+    }
+
+    function cariProduk() {
+      const keyword = document.getElementById('search').value.toLowerCase().trim();
+      const resultsDiv = document.getElementById('results');
+
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      let html = '';
+      let found = false;
+
+      allData.forEach(row => {
+        if ((row.pelanggan && row.pelanggan.toLowerCase().includes(keyword)) || 
+            (row.produk && row.produk.toLowerCase().includes(keyword))) {
+          found = true;
+          html += `
+            <div class="toko-item" onclick="map.flyTo([${row.latitude}, ${row.longitude}], 15)">
+              <strong>${row.pelanggan}</strong><br>
+              <span style="color:#64748b;">${row.alamat}</span><br>
+              <small style="color:var(--primary)">${row.produk}</small>
+            </div>`;
+          
+          const marker = L.marker([parseFloat(row.latitude), parseFloat(row.longitude)])
+            .addTo(map)
+            .bindPopup(`<b>${row.pelanggan}</b><br>${row.alamat}<br>${row.produk}`);
+          markers.push(marker);
+        }
+      });
+
+      resultsDiv.innerHTML = found ? html : `<div style="padding:40px 20px;text-align:center;color:#64748b;">Tidak ditemukan hasil</div>`;
+
+      if (markers.length > 0) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15));
+    }
+
+    document.getElementById('search').addEventListener('focus', () => showSuggestions(productList));
+    document.getElementById('search').addEventListener('input', function() {
+      const keyword = this.value.toLowerCase().trim();
+      const filtered = productList.filter(p => p.toLowerCase().includes(keyword));
+      showSuggestions(filtered.length > 0 ? filtered : productList);
+    });
+
+    window.onload = () => {
+      initMap();
+      loadData();
+    };
+  </script>
+</body>
+</html>
