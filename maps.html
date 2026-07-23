@@ -381,7 +381,7 @@
 
         setTimeout(() => {
           overlay.style.display = 'none';
-          showSuggestions(productList);
+          if (!isMobile()) showSuggestions(productList);
         }, 280);
       } catch (e) {
         clearInterval(progressInterval);
