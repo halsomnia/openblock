@@ -158,6 +158,7 @@
       border-bottom: 1px solid var(--gray-100);
       flex-shrink: 0;
     }
+    .sheet-handle { display: none; }
     #results { overflow-y: auto; }
     #results:empty, #resultCount:empty { display: none; }
 
@@ -258,10 +259,46 @@
     }
     .progress { height: 100%; background: var(--blue); width: 0%; transition: width 0.2s ease; }
 
-    /* Small screens: panel spans full width */
-    @media (max-width: 640px) {
-      .panel { left: 8px; right: 8px; width: auto; top: 8px; max-height: calc(100vh - 16px); }
-      #gpsBtn { bottom: 16px; right: 8px; }
+    /* Small screens: Google Maps mobile style — search bar spans the top,
+       results become a draggable bottom sheet that can be swiped to minimize/expand. */
+    @media (max-width: 768px) {
+      .panel {
+        left: 8px;
+        right: 8px;
+        width: auto;
+        top: 8px;
+        max-height: none;
+        display: block;
+      }
+      .results-card {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        height: 85vh;
+        max-height: 85vh;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -2px 12px rgba(60,64,67,.2);
+        z-index: 700;
+        touch-action: none;
+      }
+      .sheet-header {
+        flex-shrink: 0;
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+      }
+      .sheet-handle {
+        display: block;
+        width: 36px;
+        height: 4px;
+        background: var(--gray-300);
+        border-radius: 2px;
+        margin: 10px auto 2px;
+      }
+      #results { touch-action: pan-y; }
+      #gpsBtn { bottom: 24px; right: 8px; }
     }
   </style>
 </head>
@@ -278,8 +315,11 @@
         <button id="searchBtn" title="Cari">🔍</button>
         <div id="suggestions" class="suggestions"></div>
       </div>
-      <div class="results-card">
-        <div id="resultCount"></div>
+      <div class="results-card" id="resultsCard">
+        <div class="sheet-header" id="sheetHeader">
+          <div class="sheet-handle"></div>
+          <div id="resultCount"></div>
+        </div>
         <div id="results"></div>
       </div>
     </div>
@@ -409,6 +449,7 @@
       if (!chips.length && !keyword) {
         document.getElementById('resultCount').textContent = '';
         resultsDiv.innerHTML = `<div class="empty-state">Pilih atau ketik nama produk / toko untuk mencari</div>`;
+        setSheetState('collapsed');
         return;
       }
 
@@ -472,16 +513,111 @@
 
       document.getElementById('resultCount').textContent = found ? (markers.length + ' toko ditemukan') : 'Tidak ditemukan hasil';
       resultsDiv.innerHTML = found ? html : `<div class="empty-state">Tidak ditemukan hasil</div>`;
+      setSheetState(found ? 'half' : 'collapsed');
 
       if (markers.length > 0) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15));
     }
 
     function focusMarker(i, lat, lng) {
       map.flyTo([lat, lng], 15);
+      setSheetState('collapsed');
       setTimeout(() => {
         if (markers[i]) markers[i].openPopup();
       }, 500);
     }
+
+    // ---- Mobile bottom sheet (draggable results panel) ----
+    const resultsCard = document.getElementById('resultsCard');
+    const sheetHeader = document.getElementById('sheetHeader');
+    const MOBILE_QUERY = '(max-width: 768px)';
+    let sheetState = 'collapsed'; // 'collapsed' | 'half' | 'full'
+    let sheetTranslate = 0;
+    let dragStartY = 0;
+    let dragStartTranslate = 0;
+    let dragging = false;
+    let dragMoved = false;
+
+    function isMobile() {
+      return window.matchMedia(MOBILE_QUERY).matches;
+    }
+
+    function getSnapOffsets() {
+      const h = resultsCard.offsetHeight || Math.round(window.innerHeight * 0.85);
+      const collapsedVisible = 64;
+      const halfVisible = window.innerHeight * 0.5;
+      return {
+        collapsed: Math.max(0, h - collapsedVisible),
+        half: Math.max(0, h - halfVisible),
+        full: 0
+      };
+    }
+
+    function applySheetTranslate(px, animate) {
+      resultsCard.style.transition = animate ? 'transform 0.25s ease' : 'none';
+      resultsCard.style.transform = `translateY(${px}px)`;
+      sheetTranslate = px;
+    }
+
+    function setSheetState(state, animate) {
+      if (!isMobile()) return;
+      sheetState = state;
+      applySheetTranslate(getSnapOffsets()[state], animate !== false);
+    }
+
+    function startDrag(e) {
+      if (!isMobile()) return;
+      dragging = true;
+      dragMoved = false;
+      dragStartY = e.clientY;
+      dragStartTranslate = sheetTranslate;
+      resultsCard.style.transition = 'none';
+      sheetHeader.setPointerCapture(e.pointerId);
+    }
+
+    function duringDrag(e) {
+      if (!dragging) return;
+      const dy = e.clientY - dragStartY;
+      if (Math.abs(dy) > 5) dragMoved = true;
+      const offsets = getSnapOffsets();
+      const next = Math.max(offsets.full, Math.min(offsets.collapsed, dragStartTranslate + dy));
+      applySheetTranslate(next, false);
+    }
+
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+
+      if (!dragMoved) {
+        // Treat as a tap on the handle: cycle collapsed -> half -> full -> collapsed.
+        const next = sheetState === 'collapsed' ? 'half' : sheetState === 'half' ? 'full' : 'collapsed';
+        setSheetState(next);
+        return;
+      }
+
+      const offsets = getSnapOffsets();
+      let nearest = 'collapsed';
+      let best = Math.abs(sheetTranslate - offsets.collapsed);
+      ['half', 'full'].forEach(key => {
+        const dist = Math.abs(sheetTranslate - offsets[key]);
+        if (dist < best) { best = dist; nearest = key; }
+      });
+      setSheetState(nearest);
+    }
+
+    sheetHeader.addEventListener('pointerdown', startDrag);
+    sheetHeader.addEventListener('pointermove', duringDrag);
+    sheetHeader.addEventListener('pointerup', endDrag);
+    sheetHeader.addEventListener('pointercancel', endDrag);
+
+    function handleViewportChange() {
+      if (isMobile()) {
+        setSheetState(sheetState, false);
+      } else {
+        resultsCard.style.transform = '';
+        resultsCard.style.transition = '';
+      }
+    }
+    window.addEventListener('resize', handleViewportChange);
 
     document.addEventListener('click', e => {
       if (!e.target.closest('.search-card')) {
@@ -531,6 +667,7 @@
     window.onload = () => {
       initMap();
       loadData();
+      handleViewportChange();
     };
   </script>
 </body>
