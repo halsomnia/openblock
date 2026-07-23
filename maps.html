@@ -491,7 +491,11 @@
 
       let html = '';
 
-      groups.forEach(store => {
+      const sortedStores = Array.from(groups.values()).sort((a, b) =>
+        (a.pelanggan || '').localeCompare(b.pelanggan || '', 'id', { sensitivity: 'base' })
+      );
+
+      sortedStores.forEach(store => {
         const produkText = Array.from(store.produkSet).join(', ');
         const idx = markers.length;
 
