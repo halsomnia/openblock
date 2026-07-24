@@ -244,6 +244,41 @@
     .switch input:checked + .slider { background-color: var(--blue); }
     .switch input:checked + .slider:before { transform: translateX(16px); }
 
+    /* Legenda heatmap — muncul di pojok kiri-bawah peta selama fitur
+       "Kepadatan Toko" aktif, terlepas dari heatmap-nya sendiri sedang
+       tampil atau sedang digantikan dot di zoom dekat. */
+    .heatmap-legend {
+      position: absolute;
+      left: 12px;
+      bottom: 24px;
+      z-index: 500;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: var(--shadow-1);
+      padding: 8px 12px;
+      pointer-events: none;
+    }
+    .heatmap-legend-title {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+    .heatmap-legend-bar {
+      width: 120px;
+      height: 10px;
+      border-radius: 4px;
+      border: 1.5px solid rgba(0,0,0,0.25);
+      background: linear-gradient(to right, #1a73e8, #22c1c3, #7ed957, #fbbc04, #ea4335);
+    }
+    .heatmap-legend-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
     /* Kartu ringkasan per kota — statistik hasil pencarian, di luar peta */
     .city-summary-card {
       background: #fff;
@@ -393,7 +428,12 @@
       text-transform: uppercase;
       letter-spacing: .03em;
     }
-    #results { overflow-y: auto; }
+    #results {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     #results:empty { display: none; }
 
     .toko-item {
@@ -571,6 +611,11 @@
 <body>
   <div class="app">
     <div id="map"></div>
+    <div class="heatmap-legend" id="heatmapLegend" style="display:none;">
+      <div class="heatmap-legend-title">Kepadatan Toko</div>
+      <div class="heatmap-legend-bar"></div>
+      <div class="heatmap-legend-labels"><span>Jarang</span><span>Padat</span></div>
+    </div>
 
     <div class="panel">
       <div class="search-card">
@@ -594,10 +639,20 @@
         <div class="feature-row">
           <div class="feature-text">
             <div class="feature-title">📊 Ringkasan per Kota</div>
-            <div class="feature-desc">Tampilkan statistik jumlah toko per kota (di luar peta), berdasarkan koordinat toko.</div>
+            <div class="feature-desc">Tampilkan jumlah toko per kota.</div>
           </div>
           <label class="switch">
             <input type="checkbox" id="toggleCitySummary" onchange="onFeatureToggle('citySummary', this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="feature-row">
+          <div class="feature-text">
+            <div class="feature-title">🔥 Kepadatan Toko</div>
+            <div class="feature-desc">Menampilkan wilayah yang padat atau kosong.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleHeatmap" onchange="onFeatureToggle('heatmap', this.checked)">
             <span class="slider"></span>
           </label>
         </div>
@@ -630,14 +685,27 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script>
-    let map, markers = [], markerLayer;
+    let map, markerLayer, heatLayer;
+    // Ambang zoom transisi heatmap <-> dot. Di bawah ini ("zoom jauh",
+    // level provinsi/kota besar): heatmap tampil, dot disembunyikan — dot
+    // di zoom ini akan saling tumpuk dan tidak terbaca. Di angka ini ke
+    // atas ("zoom dekat", level kecamatan/jalan): heatmap otomatis
+    // memudar/hilang, dot individual muncul lagi seperti biasa.
+    const HEATMAP_ZOOM_THRESHOLD = 13;
+    // currentStores: hasil render aktif saat ini (SEMUA toko yang cocok
+    // dengan filter, urut sama seperti daftar di panel). Tiap entri punya
+    // slot `marker` yang diisi belakangan (lazy) hanya kalau titiknya
+    // sedang terlihat di layar — supaya jumlah objek marker aktif di peta
+    // tidak pernah lebih banyak dari yang benar-benar tampak.
+    let currentStores = [];
     let allData = [];
     let selectedProducts = new Set();
     // Fitur tambahan (on/off), tersimpan supaya pilihan user tidak hilang
     // saat halaman dibuka lagi. Kalau semua fitur off, tampilan kembali
     // ke default (daftar toko/produk biasa, tanpa panel tambahan apa pun).
-    let features = { citySummary: false };
+    let features = { citySummary: false, heatmap: false };
     let storeList = [];           // nama-nama toko unik, untuk autocomplete
     let currentMode = 'none';     // 'none' | 'search' | 'all'
     let chipMode = 'toko';        // 'produk' | 'toko' — chip aktif terakhir,
@@ -839,6 +907,14 @@
     // setiap kali daftar toko dirender ulang, supaya statistiknya selalu
     // mengikuti hasil/filter yang sedang tampil. Kalau fiturnya sedang
     // OFF, kartu selalu disembunyikan (kembali ke tampilan default).
+    // Memendekkan "Kabupaten" -> "Kab." khusus untuk label yang ditampilkan
+    // di kartu ringkasan per kota (nama lengkap tetap dipakai di atribut
+    // title, jadi masih terbaca lengkap saat di-hover). Nama kota/kotamadya
+    // yang tidak diawali "Kabupaten" tidak berubah.
+    function singkatNamaKota(nama) {
+      return nama.replace(/^Kabupaten\s+/, 'Kab. ');
+    }
+
     function updateCitySummary(storesValid, label) {
       const card = document.getElementById('citySummaryCard');
       if (!features.citySummary) {
@@ -869,7 +945,7 @@
         rowsHtml += `
           <div class="city-summary-row">
             <div class="city-summary-rank">${i + 1}</div>
-            <div class="city-summary-name" title="${escapeHtml(kota)}">${escapeHtml(kota)}</div>
+            <div class="city-summary-name" title="${escapeHtml(kota)}">${escapeHtml(singkatNamaKota(kota))}</div>
             <div class="city-summary-bar-wrap"><div class="city-summary-bar" style="width:${pct}%"></div></div>
             <div class="city-summary-count">${jumlah} toko</div>
           </div>`;
@@ -918,21 +994,60 @@
       try {
         const saved = JSON.parse(localStorage.getItem('nsiFeatures') || '{}');
         if (typeof saved.citySummary === 'boolean') features.citySummary = saved.citySummary;
+        if (typeof saved.heatmap === 'boolean') features.heatmap = saved.heatmap;
       } catch (e) {}
       document.getElementById('toggleCitySummary').checked = features.citySummary;
+      document.getElementById('toggleHeatmap').checked = features.heatmap;
       updateFeatureBadge();
     }
 
     function initMap() {
-      map = L.map('map', { zoomControl: false }).setView([-6.92, 107.61], 11);
+      // preferCanvas: semua marker vektor (circleMarker) digambar di satu
+      // <canvas>, bukan sebagai elemen DOM terpisah per toko. Ini yang
+      // membuat pan/zoom tetap mulus walau titiknya ratusan-ribuan,
+      // karena browser tidak perlu reflow/repaint ratusan elemen DOM
+      // setiap kali peta digeser/di-zoom.
+      map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-6.92, 107.61], 11);
       L.control.zoom({ position: 'bottomright' }).addTo(map);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
       // PENTING: tidak pakai marker cluster. Semua titik toko harus selalu
       // tampil satu per satu di peta, berapa pun jumlahnya dan di zoom
       // berapa pun — tidak boleh "dijumlahkan"/dikelompokkan jadi satu
       // angka bulat saat zoom out. Ini perilaku default aplikasi.
+      //
+      // Sebagai gantinya, performa dijaga lewat 2 hal:
+      // 1) Marker dibuat sebagai L.circleMarker (canvas) alih-alih
+      //    L.marker (DOM/gambar) — lihat renderVisibleMarkers().
+      // 2) Viewport culling: hanya marker yang berada di area peta yang
+      //    sedang terlihat (+ buffer) yang benar-benar ditambahkan ke
+      //    layer; sisanya baru dibuat saat area itu masuk layar. Daftar
+      //    toko di panel tetap menampilkan SEMUA hasil, tidak dipotong —
+      //    yang di-cull cuma titik di peta, bukan datanya.
       markerLayer = L.layerGroup();
       map.addLayer(markerLayer);
+
+      // Layer heatmap (Leaflet.heat) — dibangun dari currentStores lewat
+      // rebuildHeatmapLayer(), tapi baru ditambahkan/dilepas dari peta oleh
+      // updateHeatmapDisplay() sesuai status fitur & level zoom. Belum
+      // ditambahkan ke peta di sini karena defaultnya fitur ini off.
+      heatLayer = L.heatLayer([], {
+        radius: 28,
+        blur: 15,
+        maxZoom: 17,
+        minOpacity: 0.45,
+        gradient: { 0.2: '#1a73e8', 0.4: '#22c1c3', 0.6: '#7ed957', 0.8: '#fbbc04', 1.0: '#ea4335' }
+      });
+
+      let viewportRenderTimer = null;
+      map.on('moveend zoomend', () => {
+        clearTimeout(viewportRenderTimer);
+        viewportRenderTimer = setTimeout(renderVisibleMarkers, 120);
+      });
+
+      // Transisi heatmap <-> dot murni berdasarkan level zoom peta —
+      // dipisah dari listener di atas (tidak di-debounce) supaya beralihnya
+      // langsung terasa responsif begitu zoom berhenti berubah.
+      map.on('zoomend', updateHeatmapDisplay);
     }
 
     async function loadData() {
@@ -1037,8 +1152,10 @@
     function showProductCatalog() {
       const resultsDiv = document.getElementById('results');
       currentMode = 'none';
+      currentStores = [];
       markerLayer.clearLayers();
-      markers = [];
+      rebuildHeatmapLayer();
+      updateHeatmapDisplay();
       document.getElementById('resultCount').textContent = '';
       document.getElementById('resultHeaderRow').style.display = 'none';
       updateCitySummary([], null);
@@ -1205,10 +1322,89 @@
     }
 
     // Fungsi bersama: mengurutkan alfabetis (A-Z), merender daftar + marker cluster.
+    // Membuat isi popup satu toko. Dipisah jadi fungsi sendiri supaya bisa
+    // dipakai ulang oleh renderVisibleMarkers() setiap kali sebuah titik
+    // baru masuk ke area peta yang terlihat.
+    function buildPopupHtml(store) {
+      return `<b>${store.namaAman}</b><br>${store.alamatAman}<br>${store.produkAman}<br><button class="popup-nav-btn" onclick="window.open('https://www.google.com/maps?q=${store.lat},${store.lng}','_blank')">➡ Navigasi Google Maps</button>`;
+    }
+
+    // Viewport culling: dipanggil tiap kali peta selesai digeser/di-zoom
+    // (lihat listener 'moveend zoomend' di initMap()) dan juga langsung
+    // setelah renderStoreList() mengisi currentStores. Hanya toko yang
+    // titiknya berada dalam area peta saat ini (+ buffer 30% supaya tidak
+    // "kedip" muncul belakangan saat digeser) yang benar-benar dibuatkan
+    // marker dan ditambahkan ke peta — daftar di panel tetap menampilkan
+    // SEMUA toko hasil filter, cuma titik di peta yang dibatasi.
+    //
+    // Marker yang sudah pernah dibuat (store.marker) dipakai ulang, tidak
+    // dibuat ulang tiap render, supaya tetap murah dipanggil berkali-kali
+    // saat user menggeser peta.
+    function renderVisibleMarkers() {
+      markerLayer.clearLayers();
+      if (!currentStores.length) return;
+
+      const viewBounds = map.getBounds().pad(0.3);
+      currentStores.forEach(store => {
+        if (!viewBounds.contains([store.lat, store.lng])) return;
+        if (!store.marker) {
+          store.marker = L.circleMarker([store.lat, store.lng], {
+            radius: 7,
+            weight: 2,
+            color: '#ffffff',
+            fillColor: '#1a73e8',
+            fillOpacity: 1
+          }).bindPopup(buildPopupHtml(store));
+        }
+        markerLayer.addLayer(store.marker);
+      });
+    }
+
+    // Membangun ulang titik-titik heatmap dari currentStores — yaitu toko
+    // yang SEDANG aktif ditampilkan sesuai filter/pencarian saat ini (sama
+    // seperti sumber data renderVisibleMarkers()). Dipanggil setiap kali
+    // currentStores berubah (lihat renderStoreList()), jadi heatmap selalu
+    // otomatis menyesuaikan begitu hasil pencarian/chip berubah.
+    function rebuildHeatmapLayer() {
+      if (!heatLayer) return;
+      const points = currentStores.map(s => [s.lat, s.lng, 0.6]);
+      heatLayer.setLatLngs(points);
+    }
+
+    // Menentukan tampilan mana yang aktif di peta: heatmap ATAU dot
+    // individual — tidak pernah dua-duanya sekaligus. Transisi ini murni
+    // berdasarkan level zoom peta (map.getZoom() vs HEATMAP_ZOOM_THRESHOLD),
+    // jadi tetap sejalan dengan aturan "titik toko tidak pernah dijadikan
+    // cluster/angka": di zoom dekat, dot yang tampil tetap satu-satu persis
+    // seperti sebelum fitur ini ada.
+    function updateHeatmapDisplay() {
+      const legend = document.getElementById('heatmapLegend');
+
+      if (!features.heatmap) {
+        if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
+        if (!map.hasLayer(markerLayer)) map.addLayer(markerLayer);
+        legend.style.display = 'none';
+        return;
+      }
+
+      // Legenda tampil selama fitur aktif, terlepas dari zoom saat ini.
+      legend.style.display = 'block';
+
+      const zoomDekat = map.getZoom() >= HEATMAP_ZOOM_THRESHOLD;
+      if (zoomDekat) {
+        if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
+        if (!map.hasLayer(markerLayer)) {
+          map.addLayer(markerLayer);
+          renderVisibleMarkers();
+        }
+      } else {
+        if (map.hasLayer(markerLayer)) map.removeLayer(markerLayer);
+        if (!map.hasLayer(heatLayer)) map.addLayer(heatLayer);
+      }
+    }
+
     function renderStoreList(groups, opts) {
       const resultsDiv = document.getElementById('results');
-      markerLayer.clearLayers();
-      markers = [];
       const bounds = L.latLngBounds([]);
 
       let storesArr = Array.from(groups.values()).map(store => {
@@ -1224,6 +1420,7 @@
 
       let html = '';
       let skipped = 0;
+      currentStores = [];
 
       storesArr.forEach(store => {
         // Lewati toko dengan koordinat kosong/rusak alih-alih membuat marker
@@ -1231,13 +1428,13 @@
         if (!store.valid) { skipped++; return; }
 
         const produkText = Array.from(store.produkSet).join(', ');
-        const idx = markers.length;
+        const idx = currentStores.length;
         const namaAman = escapeHtml(store.pelanggan);
         const alamatAman = escapeHtml(store.alamat);
         const produkAman = escapeHtml(produkText);
 
         html += `
-            <div class="toko-item" onclick="focusMarker(${idx},${store.lat},${store.lng})">
+            <div class="toko-item" onclick="focusMarker(${idx})">
               <div class="row">
                 <span style="font-size:18px;">🏪</span>
                 <span class="title">${namaAman}</span>
@@ -1246,14 +1443,17 @@
               <div class="prod">🎨 ${produkAman}</div>
             </div>`;
 
-        const marker = L.marker([store.lat, store.lng])
-          .bindPopup(`<b>${namaAman}</b><br>${alamatAman}<br>${produkAman}<br><button class="popup-nav-btn" onclick="window.open('https://www.google.com/maps?q=${store.lat},${store.lng}','_blank')">➡ Navigasi Google Maps</button>`);
-        markerLayer.addLayer(marker);
-        markers.push(marker);
+        // marker: null dulu — baru dibuat oleh renderVisibleMarkers() saat
+        // titik ini kebetulan masuk area peta yang terlihat (lazy).
+        currentStores.push({
+          lat: store.lat, lng: store.lng,
+          namaAman, alamatAman, produkAman,
+          marker: null
+        });
         bounds.extend([store.lat, store.lng]);
       });
 
-      const total = markers.length;
+      const total = currentStores.length;
       let label = '';
       if (total > 0) {
         label = opts.allMode
@@ -1285,19 +1485,32 @@
       setSheetState((total > 0 || produkSuggestions.length) ? 'mid' : 'collapsed');
 
       if (total > 0) map.fitBounds(bounds.pad(0.15));
+      // Render langsung untuk viewport saat ini (baik total>0 atau 0, supaya
+      // marker lama ikut dibersihkan). fitBounds di atas juga akan memicu
+      // event 'moveend'/'zoomend' yang sudah didengarkan di initMap() untuk
+      // merender ulang begitu animasi peta selesai berpindah.
+      renderVisibleMarkers();
+
+      // Heatmap (kalau fiturnya aktif) ikut disinkronkan ke currentStores
+      // yang baru, persis seperti renderVisibleMarkers() di atas.
+      rebuildHeatmapLayer();
+      updateHeatmapDisplay();
 
       updateCitySummary(storesArr.filter(s => s.valid), opts.summaryLabel);
     }
 
-    function focusMarker(i, lat, lng) {
+    function focusMarker(idx) {
       setSheetState('collapsed');
-      const marker = markers[i];
-      if (marker) {
-        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 15));
-        marker.openPopup();
-      } else {
-        map.flyTo([lat, lng], 15);
-      }
+      const store = currentStores[idx];
+      if (!store) return;
+      map.flyTo([store.lat, store.lng], Math.max(map.getZoom(), 15));
+      map.once('moveend', () => {
+        // Setelah flyTo selesai, area tujuan otomatis masuk viewport —
+        // render ulang supaya marker toko ini pasti sudah ada sebelum
+        // popup-nya dibuka.
+        renderVisibleMarkers();
+        if (store.marker) store.marker.openPopup();
+      });
     }
 
     // ---- Mobile bottom sheet (draggable results panel) ----
