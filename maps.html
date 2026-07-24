@@ -10,12 +10,16 @@
     :root {
       --blue: #1a73e8;
       --blue-dark: #1765cc;
+      --blue-tint: #e8f0fe;
       --gray-100: #f1f3f4;
+      --gray-200: #eceff1;
       --gray-300: #dadce0;
       --text: #202124;
       --text-secondary: #5f6368;
       --shadow-1: 0 1px 2px rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15);
       --shadow-2: 0 1px 3px rgba(60,64,67,.30), 0 4px 8px 3px rgba(60,64,67,.15);
+      --shadow-soft: 0 2px 6px rgba(32,33,36,.12), 0 1px 2px rgba(32,33,36,.08);
+      --shadow-soft-lg: 0 6px 20px rgba(32,33,36,.14), 0 2px 6px rgba(32,33,36,.08);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; }
@@ -44,15 +48,21 @@
 
     .search-card {
       background: #fff;
-      border-radius: 24px;
-      box-shadow: var(--shadow-1);
+      border-radius: 26px;
+      border: 1px solid rgba(60,64,67,.08);
+      box-shadow: var(--shadow-soft);
       display: flex;
       align-items: center;
-      min-height: 48px;
+      min-height: 52px;
       padding: 6px 8px 6px 20px;
-      gap: 8px;
+      gap: 10px;
       position: relative;
       flex-shrink: 0;
+      transition: box-shadow .18s ease, border-color .18s ease;
+    }
+    .search-card:focus-within {
+      box-shadow: var(--shadow-soft-lg);
+      border-color: rgba(26,115,232,.35);
     }
     .search-card .icon { font-size: 18px; color: var(--text-secondary); flex-shrink: 0; }
     #inputWrap {
@@ -66,8 +76,8 @@
     }
     #chips { display: contents; }
     .chip {
-      background: var(--gray-100);
-      color: var(--text);
+      background: var(--blue-tint);
+      color: var(--blue-dark);
       border-radius: 16px;
       padding: 5px 8px 5px 12px;
       font-size: 13px;
@@ -88,7 +98,7 @@
       align-items: center;
       justify-content: center;
     }
-    .chip .remove:hover { background: var(--gray-300); }
+    .chip .remove:hover { background: rgba(26,115,232,.16); }
     #search {
       flex: 1;
       min-width: 90px;
@@ -132,13 +142,27 @@
     }
     #clearChipsBtn:hover { background: var(--gray-100); }
 
-    /* Baris chip mode Produk/Toko — selalu terlihat tepat di bawah search
-       bar, independen dari kotak pencarian (kotak tetap bisa diketik bebas
-       kapan saja, chip tidak menonaktifkan/menutupnya). */
-    .mode-chip-row {
+    /* Baris kontrol di bawah search bar: segmented control Produk/Toko
+       di kiri, tombol Fitur terpisah di kanan — independen dari kotak
+       pencarian (kotak tetap bisa diketik bebas kapan saja). */
+    .controls-row {
       display: flex;
+      align-items: center;
       gap: 8px;
       flex-shrink: 0;
+    }
+
+    /* Segmented control ala iOS/Material 3: satu wadah pill abu-abu,
+       tombol aktif jadi kartu putih melayang di dalamnya — lebih modern
+       & rapi dibanding dua tombol outline terpisah. */
+    .mode-chip-row {
+      display: flex;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+      background: var(--gray-100);
+      border-radius: 20px;
+      padding: 3px;
     }
     .mode-chip {
       flex: 1;
@@ -146,46 +170,70 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 8px 14px;
-      border: 1px solid var(--gray-300);
-      border-radius: 20px;
-      background: #fff;
-      color: var(--text);
+      padding: 8px 12px;
+      border: none;
+      border-radius: 17px;
+      background: transparent;
+      color: var(--text-secondary);
       font-family: inherit;
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
-      box-shadow: var(--shadow-1);
+      white-space: nowrap;
+      transition: background .18s ease, color .18s ease, box-shadow .18s ease;
     }
-    .mode-chip:hover { background: var(--gray-100); }
+    .mode-chip:hover { color: var(--text); }
     .mode-chip.active {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: #fff;
+      background: #fff;
+      color: var(--blue);
+      box-shadow: var(--shadow-soft);
     }
 
-    /* Tombol & panel "Fitur" — daftar pilihan fitur tambahan (on/off),
-       terpisah dari chip Produk/Toko supaya bisa berkembang tanpa
-       mengganggu tampilan default. */
+    /* Toolbar di dalam header sheet: berisi tombol "Fitur" untuk
+       rekap/analisis hasil pencarian (Ringkasan per Kota, Kepadatan
+       Toko). Ditaruh di dalam sheet karena fungsi-fungsi ini memang
+       untuk menganalisis hasil yang sedang tampil di sheet, bukan
+       kontrol independen dari peta. Selalu terlihat (tidak ikut
+       disembunyikan seperti .result-header-row) supaya tombol Fitur
+       tetap bisa ditekan kapan saja sheet sedang terbuka. */
+    .sheet-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 4px 16px 10px;
+      border-bottom: 1px solid var(--gray-100);
+      flex-shrink: 0;
+    }
+    .sheet-toolbar-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+
+    /* Tombol "Fitur" — daftar pilihan fitur tambahan (on/off) untuk
+       rekap/analisis hasil pencarian, sekarang tinggal di dalam sheet
+       (lihat .sheet-toolbar) alih-alih melayang terpisah di atas peta. */
     .feature-btn {
-      align-self: flex-start;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       gap: 6px;
-      background: #fff;
-      border: 1px solid var(--gray-300);
+      background: var(--gray-100);
+      border: 1px solid transparent;
       border-radius: 20px;
-      padding: 8px 14px;
+      padding: 7px 12px;
       font-family: inherit;
       font-size: 13px;
       font-weight: 500;
       color: var(--text);
       cursor: pointer;
-      box-shadow: var(--shadow-1);
-      flex-shrink: 0;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
     }
-    .feature-btn:hover { background: var(--gray-100); }
-    .feature-btn.has-active { border-color: var(--blue); color: var(--blue); }
+    .feature-btn:hover { background: var(--gray-200); }
+    .feature-btn.has-active { border-color: rgba(26,115,232,.35); color: var(--blue); background: var(--blue-tint); }
     .feature-btn .badge {
       background: var(--blue);
       color: #fff;
@@ -198,8 +246,9 @@
 
     .feature-panel {
       background: #fff;
+      border: 1px solid var(--gray-200);
       border-radius: 12px;
-      box-shadow: var(--shadow-2);
+      margin: 8px 16px 0;
       padding: 6px;
       flex-shrink: 0;
     }
@@ -522,7 +571,8 @@
         width: auto;
         top: 8px;
         max-height: none;
-        display: block;
+        display: flex;
+        flex-direction: column;
         gap: 10px;
       }
       /* Search bar & chip mode terlalu nempel di layar sempit — kasih
@@ -535,7 +585,6 @@
       }
       #inputWrap { gap: 8px; }
       .chip { padding: 7px 10px 7px 14px; }
-      .mode-chip-row { gap: 10px; }
       .mode-chip { padding: 10px 14px; }
       .results-card {
         position: fixed;
@@ -626,35 +675,10 @@
         <button id="clearChipsBtn" title="Hapus semua produk terpilih" aria-label="Hapus semua produk terpilih" style="display:none;">🗑</button>
         <button id="searchBtn" title="Cari" aria-label="Cari">🔍</button>
       </div>
-      <div class="mode-chip-row">
-        <button type="button" class="mode-chip" id="modeChipProduk" onclick="switchChipMode('produk')">🎨 Produk</button>
-        <button type="button" class="mode-chip active" id="modeChipToko" onclick="switchChipMode('toko')">🏪 Toko</button>
-      </div>
-
-      <button type="button" class="feature-btn" id="featureToggleBtn" onclick="toggleFeaturePanel()">
-        ⚙️ Fitur <span id="featureActiveBadge" class="badge" style="display:none;">1</span>
-      </button>
-      <div class="feature-panel" id="featurePanel" style="display:none;">
-        <div class="feature-panel-title">Pilihan Fitur</div>
-        <div class="feature-row">
-          <div class="feature-text">
-            <div class="feature-title">📊 Ringkasan per Kota</div>
-            <div class="feature-desc">Tampilkan jumlah toko per kota.</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="toggleCitySummary" onchange="onFeatureToggle('citySummary', this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="feature-row">
-          <div class="feature-text">
-            <div class="feature-title">🔥 Kepadatan Toko</div>
-            <div class="feature-desc">Menampilkan wilayah yang padat atau kosong.</div>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="toggleHeatmap" onchange="onFeatureToggle('heatmap', this.checked)">
-            <span class="slider"></span>
-          </label>
+      <div class="controls-row">
+        <div class="mode-chip-row">
+          <button type="button" class="mode-chip" id="modeChipProduk" onclick="switchChipMode('produk')">🎨 Produk</button>
+          <button type="button" class="mode-chip active" id="modeChipToko" onclick="switchChipMode('toko')">🏪 Toko</button>
         </div>
       </div>
 
@@ -664,6 +688,35 @@
         <div class="sheet-header" id="sheetHeader">
           <div class="sheet-handle"></div>
           <div id="sheetHintText">Tarik ke atas untuk lihat daftar toko</div>
+          <div class="sheet-toolbar" id="sheetToolbar">
+            <div class="sheet-toolbar-label">Rekap &amp; analisis hasil</div>
+            <button type="button" class="feature-btn" id="featureToggleBtn" onclick="toggleFeaturePanel()">
+              ⚙️ Fitur <span id="featureActiveBadge" class="badge" style="display:none;">1</span>
+            </button>
+          </div>
+          <div class="feature-panel" id="featurePanel" style="display:none;">
+            <div class="feature-panel-title">Pilihan Fitur</div>
+            <div class="feature-row">
+              <div class="feature-text">
+                <div class="feature-title">📊 Ringkasan per Kota</div>
+                <div class="feature-desc">Tampilkan jumlah toko per kota.</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggleCitySummary" onchange="onFeatureToggle('citySummary', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="feature-row">
+              <div class="feature-text">
+                <div class="feature-title">🔥 Kepadatan Toko</div>
+                <div class="feature-desc">Menampilkan wilayah yang padat atau kosong.</div>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggleHeatmap" onchange="onFeatureToggle('heatmap', this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
           <div class="result-header-row" id="resultHeaderRow">
             <div id="resultCount"></div>
           </div>
@@ -711,6 +764,27 @@
     let chipMode = 'toko';        // 'produk' | 'toko' — chip aktif terakhir,
                                    // menentukan tampilan default saat kotak
                                    // pencarian kosong & tidak ada filter chip.
+    // Render otomatis PERTAMA (begitu data selesai dimuat, sebelum ada
+    // interaksi user apa pun) harus membuka sheet dalam keadaan minimize,
+    // supaya peta terlihat penuh saat aplikasi baru dibuka. Setelah user
+    // mulai berinteraksi (ketik, tap chip, tap fitur, dll), perilaku normal
+    // (auto-buka ke 'mid' saat ada hasil) berlaku kembali.
+    let isInitialLoad = true;
+
+    // Dipakai di setiap tempat yang tadinya langsung setSheetState('mid'/'collapsed')
+    // begitu ada/tidaknya hasil, supaya render pertama tetap 'collapsed'.
+    // Panel Fitur sekarang ada DI DALAM sheet (bukan lagi kartu terpisah
+    // di atasnya), jadi kalau panel itu sedang terbuka, sheet-nya sendiri
+    // harus ikut terbuka ('mid') supaya panelnya kelihatan — bukan
+    // dipaksa collapsed seperti sebelumnya.
+    function autoOpenSheet(hasContent) {
+      if (isInitialLoad) {
+        isInitialLoad = false;
+        setSheetState('collapsed');
+        return;
+      }
+      setSheetState(hasContent || featurePanelOpen ? 'mid' : 'collapsed');
+    }
     let productList = [
       "CAT KAYU", "CG TAMITEX", "COLORTONE", "CT APOLLO",
       "CT TAMITEX", "CT VINOTEX", "KEM-TONE", "SPECTRUM",
@@ -960,15 +1034,32 @@
     }
 
     // Buka/tutup panel daftar pilihan fitur.
+    // Panel fitur ini sekarang ada DI DALAM sheet hasil (.results-card),
+    // tepat di bawah tombol "Fitur" di sheet-toolbar — karena fungsi
+    // fitur ini (Ringkasan per Kota, Kepadatan Toko) memang untuk
+    // merekap/menganalisis hasil pencarian yang sedang tampil di sheet
+    // itu sendiri. Karena itu, begitu panel dibuka, sheet-nya ikut
+    // dibuka ke 'mid' supaya panelnya kelihatan (bukan dipaksa collapsed
+    // seperti dulu waktu panel ini masih kartu terpisah di atas peta).
+    let featurePanelOpen = false;
+
     function toggleFeaturePanel() {
       const panel = document.getElementById('featurePanel');
-      panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+      const willOpen = panel.style.display === 'none' || !panel.style.display;
+      panel.style.display = willOpen ? 'block' : 'none';
+      featurePanelOpen = willOpen;
+
+      if (!isMobile()) return;
+      if (willOpen) setSheetState('mid');
     }
 
     // Dipanggil saat sebuah switch fitur di-toggle. Menyimpan preferensi,
     // lalu me-render ulang tampilan yang sedang aktif (tanpa mengubah
     // filter/pencarian yang sedang berjalan) supaya kartu ringkasan
-    // langsung muncul/hilang sesuai status barunya.
+    // langsung muncul/hilang sesuai status barunya. autoOpenSheet() di
+    // dalam render ulang itu sudah tahu untuk membuka sheet ke 'mid'
+    // selama featurePanelOpen masih true, jadi tidak perlu penanganan
+    // tambahan di sini lagi.
     function onFeatureToggle(key, checked) {
       features[key] = checked;
       try { localStorage.setItem('nsiFeatures', JSON.stringify(features)); } catch (e) {}
@@ -1171,8 +1262,9 @@
       }
       resultsDiv.innerHTML = html;
       // Sama seperti daftar toko: begitu ada isi, sheet mobile langsung
-      // terbuka penuh (bukan nyangkut minimize di bawah tanpa bisa digeser).
-      setSheetState(list.length ? 'mid' : 'collapsed');
+      // terbuka penuh (bukan nyangkut minimize di bawah tanpa bisa digeser) —
+      // KECUALI ini render otomatis pertama saat aplikasi baru dibuka.
+      autoOpenSheet(list.length > 0);
     }
 
     // Switch chip Produk/Toko: hanya mengganti TAMPILAN DEFAULT (saat kotak
@@ -1482,7 +1574,7 @@
       document.getElementById('resultCount').textContent = label;
       document.getElementById('resultHeaderRow').style.display = total ? 'flex' : 'none';
       resultsDiv.innerHTML = suggestionHtml + bodyHtml;
-      setSheetState((total > 0 || produkSuggestions.length) ? 'mid' : 'collapsed');
+      autoOpenSheet(total > 0 || produkSuggestions.length > 0);
 
       if (total > 0) map.fitBounds(bounds.pad(0.15));
       // Render langsung untuk viewport saat ini (baik total>0 atau 0, supaya
@@ -1645,19 +1737,36 @@
       searchDebounceTimer = setTimeout(cariProduk, 250);
     });
 
-    // Pressing Enter runs the search and closes the suggestion list.
+    // blur() saja kadang tidak cukup untuk menutup keyboard di beberapa
+    // WebView/Chrome Android — keyboard tetap terbuka kalau tidak ada
+    // elemen lain yang "mengambil alih" fokus. Trik yang lebih andal:
+    // pindahkan fokus sebentar ke <body> (lewat tabindex sementara),
+    // baru lepas lagi.
+    function closeKeyboard() {
+      searchInput.blur();
+      document.body.setAttribute('tabindex', '-1');
+      document.body.focus();
+      document.body.removeAttribute('tabindex');
+    }
+
+    // Pressing Enter runs the search, closes the suggestion list, dan
+    // menutup keyboard (blur) supaya user langsung lihat hasil tanpa
+    // keyboard menutupi sebagian layar.
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         clearTimeout(searchDebounceTimer);
         cariProduk();
+        closeKeyboard();
       }
     });
 
-    // Explicit search button, same result as pressing Enter.
+    // Explicit search button, same result as pressing Enter — termasuk
+    // menutup keyboard.
     document.getElementById('searchBtn').addEventListener('click', () => {
       clearTimeout(searchDebounceTimer);
       cariProduk();
+      closeKeyboard();
     });
 
     document.getElementById('clearChipsBtn').addEventListener('click', clearAllChips);
