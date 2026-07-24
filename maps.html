@@ -116,21 +116,218 @@
       color: var(--blue);
     }
     #searchBtn:hover { background: var(--gray-100); }
+    #clearChipsBtn {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+    #clearChipsBtn:hover { background: var(--gray-100); }
 
-    .suggestions {
-      display: none;
-      position: absolute;
-      top: 100%;
-      margin-top: 8px;
-      left: 0;
-      right: 0;
+    /* Baris chip mode Produk/Toko — selalu terlihat tepat di bawah search
+       bar, independen dari kotak pencarian (kotak tetap bisa diketik bebas
+       kapan saja, chip tidak menonaktifkan/menutupnya). */
+    .mode-chip-row {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .mode-chip {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border: 1px solid var(--gray-300);
+      border-radius: 20px;
+      background: #fff;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: var(--shadow-1);
+    }
+    .mode-chip:hover { background: var(--gray-100); }
+    .mode-chip.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    /* Tombol & panel "Fitur" — daftar pilihan fitur tambahan (on/off),
+       terpisah dari chip Produk/Toko supaya bisa berkembang tanpa
+       mengganggu tampilan default. */
+    .feature-btn {
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1px solid var(--gray-300);
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: var(--shadow-1);
+      flex-shrink: 0;
+    }
+    .feature-btn:hover { background: var(--gray-100); }
+    .feature-btn.has-active { border-color: var(--blue); color: var(--blue); }
+    .feature-btn .badge {
+      background: var(--blue);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 1px 6px;
+      line-height: 1.4;
+    }
+
+    .feature-panel {
       background: #fff;
       border-radius: 12px;
-      max-height: 320px;
-      overflow-y: auto;
-      z-index: 600;
       box-shadow: var(--shadow-2);
+      padding: 6px;
+      flex-shrink: 0;
     }
+    .feature-panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      padding: 8px 10px 4px;
+    }
+    .feature-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 10px;
+      border-radius: 8px;
+    }
+    .feature-row:hover { background: var(--gray-100); }
+    .feature-text { min-width: 0; }
+    .feature-title { font-size: 13px; font-weight: 500; }
+    .feature-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.35; }
+
+    /* iOS-style on/off switch */
+    .switch { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background-color: var(--gray-300);
+      transition: background-color .2s ease;
+      border-radius: 22px;
+    }
+    .switch .slider:before {
+      position: absolute; content: "";
+      height: 16px; width: 16px; left: 3px; bottom: 3px;
+      background: #fff;
+      transition: transform .2s ease;
+      border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(0,0,0,.3);
+    }
+    .switch input:checked + .slider { background-color: var(--blue); }
+    .switch input:checked + .slider:before { transform: translateX(16px); }
+
+    /* Kartu ringkasan per kota — statistik hasil pencarian, di luar peta */
+    .city-summary-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: var(--shadow-1);
+      padding: 14px 16px 6px;
+      flex-shrink: 0;
+      max-height: 42vh;
+      overflow-y: auto;
+    }
+    .city-summary-header {
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .city-summary-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .city-summary-sub b { color: var(--text); font-weight: 500; }
+    .city-summary-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 0;
+    }
+    .city-summary-rank {
+      width: 16px;
+      flex-shrink: 0;
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+    .city-summary-name {
+      font-size: 13px;
+      width: 108px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .city-summary-bar-wrap {
+      flex: 1;
+      background: var(--gray-100);
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+      min-width: 24px;
+    }
+    .city-summary-bar {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 6px;
+      transition: width .3s ease;
+    }
+    .city-summary-count {
+      font-size: 12px;
+      font-weight: 600;
+      width: 66px;
+      text-align: right;
+      flex-shrink: 0;
+      color: var(--text-secondary);
+    }
+    .city-summary-total {
+      margin-top: 10px;
+      padding: 10px 0;
+      border-top: 1px solid var(--gray-100);
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      font-weight: 500;
+    }
+    .city-summary-empty {
+      padding: 10px 0 16px;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
     .suggestion-item {
       padding: 12px 16px;
       cursor: pointer;
@@ -150,17 +347,54 @@
       flex-direction: column;
       min-height: 0;
     }
-    #resultCount {
+    .result-header-row {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       padding: 10px 16px;
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 500;
       border-bottom: 1px solid var(--gray-100);
       flex-shrink: 0;
     }
+    #resultCount {
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      flex: 1;
+      min-width: 0;
+    }
     .sheet-handle { display: none; }
+    @keyframes handleBounceHint {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .sheet-header.hint-bounce .sheet-handle {
+      animation: handleBounceHint 0.6s ease-in-out 3;
+    }
+    #sheetHintText {
+      display: none;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding-bottom: 4px;
+      transition: opacity 0.4s ease;
+    }
+    .link-btn {
+      color: var(--blue);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .link-btn:hover { text-decoration: underline; }
+    .suggestion-group-label {
+      padding: 8px 16px 2px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
     #results { overflow-y: auto; }
-    #results:empty, #resultCount:empty { display: none; }
+    #results:empty { display: none; }
 
     .toko-item {
       padding: 14px 16px;
@@ -196,26 +430,6 @@
       color: var(--text-secondary);
       font-size: 14px;
     }
-
-    /* GPS floating action button, bottom-right like Google Maps */
-    #gpsBtn {
-      position: absolute;
-      z-index: 500;
-      bottom: 24px;
-      right: 12px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: none;
-      background: #fff;
-      box-shadow: var(--shadow-1);
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #gpsBtn:hover { background: var(--gray-100); }
 
     /* Loading overlay */
     .loading-overlay {
@@ -269,7 +483,20 @@
         top: 8px;
         max-height: none;
         display: block;
+        gap: 10px;
       }
+      /* Search bar & chip mode terlalu nempel di layar sempit — kasih
+         lebih banyak ruang napas (padding/gap) supaya lebih enak disentuh
+         jari dan tidak terasa berdesakan. */
+      .search-card {
+        padding: 8px 10px 8px 18px;
+        gap: 10px;
+        min-height: 52px;
+      }
+      #inputWrap { gap: 8px; }
+      .chip { padding: 7px 10px 7px 14px; }
+      .mode-chip-row { gap: 10px; }
+      .mode-chip { padding: 10px 14px; }
       .results-card {
         position: fixed;
         left: 0;
@@ -288,18 +515,57 @@
         cursor: grab;
         touch-action: none;
         user-select: none;
+        /* Area pegangan diperbesar (min-height + padding) supaya jari tidak
+           perlu presisi menyentuh garis kecil — seluruh area ini bisa
+           di-tap (buka/tutup) atau ditarik (geser bebas). */
+        min-height: 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 6px 0;
       }
       .sheet-handle {
         display: block;
-        width: 36px;
-        height: 4px;
+        width: 44px;
+        height: 5px;
         background: var(--gray-300);
-        border-radius: 2px;
-        margin: 10px auto 2px;
+        border-radius: 3px;
+        margin: 6px auto;
       }
+      .sheet-header:active .sheet-handle { background: var(--text-secondary); }
+      .result-header-row { padding: 12px 16px; }
       #results { touch-action: pan-y; }
-      #gpsBtn { bottom: 24px; right: 8px; }
     }
+    #exitToast {
+      display: none;
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%);
+      background: rgba(32,33,36,.92);
+      color: #fff;
+      padding: 10px 10px 10px 18px;
+      border-radius: 24px;
+      font-size: 13px;
+      z-index: 2000;
+      box-shadow: var(--shadow-1);
+      white-space: nowrap;
+      align-items: center;
+      gap: 10px;
+    }
+    #exitToastBtn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      border-radius: 16px;
+      padding: 6px 14px;
+      cursor: pointer;
+      background: rgba(255,255,255,.16);
+      color: #fff;
+      flex-shrink: 0;
+    }
+    #exitToastBtn:hover { background: rgba(255,255,255,.28); }
   </style>
 </head>
 <body>
@@ -312,19 +578,49 @@
           <div id="chips"></div>
           <input type="text" id="search" placeholder="Cari toko atau produk..." autocomplete="off">
         </div>
-        <button id="searchBtn" title="Cari">🔍</button>
-        <div id="suggestions" class="suggestions"></div>
+        <button id="clearChipsBtn" title="Hapus semua produk terpilih" aria-label="Hapus semua produk terpilih" style="display:none;">🗑</button>
+        <button id="searchBtn" title="Cari" aria-label="Cari">🔍</button>
       </div>
+      <div class="mode-chip-row">
+        <button type="button" class="mode-chip" id="modeChipProduk" onclick="switchChipMode('produk')">🎨 Produk</button>
+        <button type="button" class="mode-chip active" id="modeChipToko" onclick="switchChipMode('toko')">🏪 Toko</button>
+      </div>
+
+      <button type="button" class="feature-btn" id="featureToggleBtn" onclick="toggleFeaturePanel()">
+        ⚙️ Fitur <span id="featureActiveBadge" class="badge" style="display:none;">1</span>
+      </button>
+      <div class="feature-panel" id="featurePanel" style="display:none;">
+        <div class="feature-panel-title">Pilihan Fitur</div>
+        <div class="feature-row">
+          <div class="feature-text">
+            <div class="feature-title">📊 Ringkasan per Kota</div>
+            <div class="feature-desc">Tampilkan statistik jumlah toko per kota (di luar peta), berdasarkan koordinat toko.</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleCitySummary" onchange="onFeatureToggle('citySummary', this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="city-summary-card" id="citySummaryCard" style="display:none;"></div>
+
       <div class="results-card" id="resultsCard">
         <div class="sheet-header" id="sheetHeader">
           <div class="sheet-handle"></div>
-          <div id="resultCount"></div>
+          <div id="sheetHintText">Tarik ke atas untuk lihat daftar toko</div>
+          <div class="result-header-row" id="resultHeaderRow">
+            <div id="resultCount"></div>
+          </div>
         </div>
         <div id="results"></div>
       </div>
     </div>
 
-    <button id="gpsBtn" title="Lokasi saya">📍</button>
+    <div id="exitToast">
+      <span>Tekan sekali lagi untuk keluar</span>
+      <button type="button" id="exitToastBtn">Keluar</button>
+    </div>
 
     <div id="loadingOverlay" class="loading-overlay">
       <div class="spinner"></div>
@@ -335,9 +631,18 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    let map, markers = [];
+    let map, markers = [], markerLayer;
     let allData = [];
     let selectedProducts = new Set();
+    // Fitur tambahan (on/off), tersimpan supaya pilihan user tidak hilang
+    // saat halaman dibuka lagi. Kalau semua fitur off, tampilan kembali
+    // ke default (daftar toko/produk biasa, tanpa panel tambahan apa pun).
+    let features = { citySummary: false };
+    let storeList = [];           // nama-nama toko unik, untuk autocomplete
+    let currentMode = 'none';     // 'none' | 'search' | 'all'
+    let chipMode = 'toko';        // 'produk' | 'toko' — chip aktif terakhir,
+                                   // menentukan tampilan default saat kotak
+                                   // pencarian kosong & tidak ada filter chip.
     let productList = [
       "CAT KAYU", "CG TAMITEX", "COLORTONE", "CT APOLLO",
       "CT TAMITEX", "CT VINOTEX", "KEM-TONE", "SPECTRUM",
@@ -345,10 +650,289 @@
       "WALL FILLER", "WP SPECTRUM"
     ];
 
+    // Mencegah XSS: setiap teks yang berasal dari data (Google Sheet) harus
+    // di-escape sebelum dimasukkan lewat innerHTML, karena datanya bisa saja
+    // mengandung karakter HTML/script kalau sheet-nya suatu saat disusupi.
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+
+    // ---- Fitur: Ringkasan per Kota ----
+    // Kota ditentukan dari koordinat (latitude/longitude) toko, BUKAN dari
+    // kolom alamat (karena alamat kadang salah/tidak konsisten). Caranya:
+    // cari titik pusat kota/kabupaten terdekat dari koordinat toko (nearest
+    // neighbor pakai rumus haversine). Daftar di bawah memang perkiraan
+    // (titik pusat kota), jadi toko yang persis di perbatasan dua wilayah
+    // bisa saja terhitung masuk ke tetangganya — tapi cukup akurat untuk
+    // kebutuhan pemetaan & strategi marketing.
+    const CITY_POINTS = [
+      // Jabodetabek
+      { name: 'Jakarta Pusat', lat: -6.1805, lng: 106.8284 },
+      { name: 'Jakarta Utara', lat: -6.1214, lng: 106.8827 },
+      { name: 'Jakarta Barat', lat: -6.1352, lng: 106.7631 },
+      { name: 'Jakarta Selatan', lat: -6.2615, lng: 106.8106 },
+      { name: 'Jakarta Timur', lat: -6.2250, lng: 106.9004 },
+      { name: 'Kota Bekasi', lat: -6.2383, lng: 106.9756 },
+      { name: 'Kabupaten Bekasi', lat: -6.2650, lng: 107.1533 },
+      { name: 'Kota Depok', lat: -6.4025, lng: 106.7942 },
+      { name: 'Kota Bogor', lat: -6.5971, lng: 106.8060 },
+      { name: 'Kabupaten Bogor', lat: -6.5500, lng: 106.7300 },
+      { name: 'Kota Tangerang', lat: -6.1783, lng: 106.6319 },
+      { name: 'Kabupaten Tangerang', lat: -6.1783, lng: 106.5450 },
+      { name: 'Kota Tangerang Selatan', lat: -6.2884, lng: 106.7183 },
+      // Banten lainnya
+      { name: 'Kota Serang', lat: -6.1200, lng: 106.1500 },
+      { name: 'Kabupaten Serang', lat: -6.1700, lng: 106.1000 },
+      { name: 'Kota Cilegon', lat: -6.0025, lng: 106.0114 },
+      { name: 'Kabupaten Pandeglang', lat: -6.3100, lng: 106.1100 },
+      { name: 'Kabupaten Lebak', lat: -6.5600, lng: 106.2500 },
+      // Jawa Barat
+      { name: 'Kota Bandung', lat: -6.9175, lng: 107.6191 },
+      { name: 'Kabupaten Bandung', lat: -7.0500, lng: 107.6400 },
+      { name: 'Kabupaten Bandung Barat', lat: -6.8300, lng: 107.4600 },
+      { name: 'Kota Cimahi', lat: -6.8841, lng: 107.5420 },
+      { name: 'Kabupaten Sumedang', lat: -6.8590, lng: 107.9200 },
+      { name: 'Kabupaten Garut', lat: -7.2100, lng: 107.9000 },
+      { name: 'Kota Tasikmalaya', lat: -7.3274, lng: 108.2207 },
+      { name: 'Kabupaten Tasikmalaya', lat: -7.4500, lng: 108.1000 },
+      { name: 'Kota Banjar', lat: -7.3700, lng: 108.5400 },
+      { name: 'Kabupaten Ciamis', lat: -7.3300, lng: 108.3500 },
+      { name: 'Kabupaten Pangandaran', lat: -7.6800, lng: 108.6500 },
+      { name: 'Kota Cirebon', lat: -6.7063, lng: 108.5571 },
+      { name: 'Kabupaten Cirebon', lat: -6.7500, lng: 108.4800 },
+      { name: 'Kabupaten Indramayu', lat: -6.3300, lng: 108.3200 },
+      { name: 'Kabupaten Majalengka', lat: -6.8360, lng: 108.2280 },
+      { name: 'Kabupaten Kuningan', lat: -6.9760, lng: 108.4840 },
+      { name: 'Kabupaten Subang', lat: -6.5700, lng: 107.7600 },
+      { name: 'Kabupaten Purwakarta', lat: -6.5560, lng: 107.4430 },
+      { name: 'Kabupaten Karawang', lat: -6.3020, lng: 107.3010 },
+      { name: 'Kabupaten Cianjur', lat: -6.8170, lng: 107.1420 },
+      { name: 'Kota Sukabumi', lat: -6.9200, lng: 106.9270 },
+      { name: 'Kabupaten Sukabumi', lat: -7.0200, lng: 106.7500 },
+      // Jawa Tengah
+      { name: 'Kota Semarang', lat: -6.9932, lng: 110.4203 },
+      { name: 'Kabupaten Semarang', lat: -7.1500, lng: 110.4200 },
+      { name: 'Kota Surakarta (Solo)', lat: -7.5755, lng: 110.8243 },
+      { name: 'Kabupaten Sukoharjo', lat: -7.6800, lng: 110.8300 },
+      { name: 'Kabupaten Klaten', lat: -7.7060, lng: 110.6060 },
+      { name: 'Kota Magelang', lat: -7.4700, lng: 110.2170 },
+      { name: 'Kabupaten Magelang', lat: -7.4300, lng: 110.2100 },
+      { name: 'Kabupaten Purworejo', lat: -7.7180, lng: 110.0080 },
+      { name: 'Kabupaten Kebumen', lat: -7.6700, lng: 109.6500 },
+      { name: 'Kabupaten Banyumas (Purwokerto)', lat: -7.4200, lng: 109.2400 },
+      { name: 'Kabupaten Cilacap', lat: -7.7280, lng: 109.0000 },
+      { name: 'Kota Tegal', lat: -6.8690, lng: 109.1400 },
+      { name: 'Kabupaten Tegal', lat: -6.9500, lng: 109.1300 },
+      { name: 'Kota Pekalongan', lat: -6.8890, lng: 109.6750 },
+      { name: 'Kabupaten Pekalongan', lat: -7.0000, lng: 109.6700 },
+      { name: 'Kabupaten Pemalang', lat: -6.8900, lng: 109.3800 },
+      { name: 'Kabupaten Brebes', lat: -6.8700, lng: 109.0400 },
+      { name: 'Kabupaten Kudus', lat: -6.8050, lng: 110.8420 },
+      { name: 'Kabupaten Pati', lat: -6.7550, lng: 111.0380 },
+      { name: 'Kabupaten Rembang', lat: -6.7100, lng: 111.3400 },
+      { name: 'Kabupaten Blora', lat: -6.9700, lng: 111.4200 },
+      { name: 'Kabupaten Grobogan (Purwodadi)', lat: -7.0080, lng: 110.9200 },
+      { name: 'Kabupaten Demak', lat: -6.8940, lng: 110.6390 },
+      { name: 'Kabupaten Jepara', lat: -6.5900, lng: 110.6700 },
+      { name: 'Kabupaten Wonosobo', lat: -7.3600, lng: 109.9000 },
+      { name: 'Kabupaten Temanggung', lat: -7.3200, lng: 110.1700 },
+      { name: 'Kabupaten Batang', lat: -6.9080, lng: 109.7300 },
+      // DI Yogyakarta
+      { name: 'Kota Yogyakarta', lat: -7.7972, lng: 110.3688 },
+      { name: 'Kabupaten Sleman', lat: -7.7180, lng: 110.3570 },
+      { name: 'Kabupaten Bantul', lat: -7.8880, lng: 110.3290 },
+      { name: 'Kabupaten Kulon Progo', lat: -7.8250, lng: 110.1640 },
+      { name: 'Kabupaten Gunungkidul', lat: -7.9820, lng: 110.6170 },
+      // Jawa Timur
+      { name: 'Kota Surabaya', lat: -7.2575, lng: 112.7521 },
+      { name: 'Kabupaten Sidoarjo', lat: -7.4470, lng: 112.7180 },
+      { name: 'Kabupaten Gresik', lat: -7.1560, lng: 112.6560 },
+      { name: 'Kota Malang', lat: -7.9666, lng: 112.6326 },
+      { name: 'Kabupaten Malang', lat: -8.1700, lng: 112.6700 },
+      { name: 'Kota Batu', lat: -7.8710, lng: 112.5240 },
+      { name: 'Kabupaten Pasuruan', lat: -7.7500, lng: 112.9800 },
+      { name: 'Kota Pasuruan', lat: -7.6450, lng: 112.9070 },
+      { name: 'Kabupaten Probolinggo', lat: -7.8000, lng: 113.2500 },
+      { name: 'Kota Probolinggo', lat: -7.7540, lng: 113.2160 },
+      { name: 'Kabupaten Jember', lat: -8.1730, lng: 113.7000 },
+      { name: 'Kabupaten Banyuwangi', lat: -8.2190, lng: 114.3690 },
+      { name: 'Kabupaten Bondowoso', lat: -7.9130, lng: 113.8200 },
+      { name: 'Kabupaten Situbondo', lat: -7.7050, lng: 114.0080 },
+      { name: 'Kabupaten Lumajang', lat: -8.1350, lng: 113.2240 },
+      { name: 'Kota Kediri', lat: -7.8480, lng: 112.0180 },
+      { name: 'Kabupaten Kediri', lat: -7.8200, lng: 112.0100 },
+      { name: 'Kota Blitar', lat: -8.0955, lng: 112.1680 },
+      { name: 'Kabupaten Blitar', lat: -8.1000, lng: 112.1600 },
+      { name: 'Kabupaten Tulungagung', lat: -8.0650, lng: 111.9020 },
+      { name: 'Kabupaten Trenggalek', lat: -8.0500, lng: 111.7100 },
+      { name: 'Kabupaten Ponorogo', lat: -7.8680, lng: 111.4600 },
+      { name: 'Kabupaten Madiun', lat: -7.6300, lng: 111.5300 },
+      { name: 'Kota Madiun', lat: -7.6300, lng: 111.5230 },
+      { name: 'Kabupaten Ngawi', lat: -7.4100, lng: 111.4500 },
+      { name: 'Kabupaten Magetan', lat: -7.6500, lng: 111.3300 },
+      { name: 'Kabupaten Pacitan', lat: -8.1930, lng: 111.1000 },
+      { name: 'Kabupaten Bojonegoro', lat: -7.1500, lng: 111.8800 },
+      { name: 'Kabupaten Tuban', lat: -6.8980, lng: 112.0500 },
+      { name: 'Kabupaten Lamongan', lat: -7.1200, lng: 112.4200 },
+      { name: 'Kabupaten Mojokerto', lat: -7.5600, lng: 112.5000 },
+      { name: 'Kota Mojokerto', lat: -7.4700, lng: 112.4340 },
+      { name: 'Kabupaten Jombang', lat: -7.5460, lng: 112.2340 },
+      { name: 'Kabupaten Nganjuk', lat: -7.6050, lng: 111.9040 },
+      { name: 'Kabupaten Sumenep', lat: -7.0170, lng: 113.8600 },
+      { name: 'Kabupaten Pamekasan', lat: -7.1560, lng: 113.4760 },
+      { name: 'Kabupaten Sampang', lat: -7.1900, lng: 113.2500 },
+      { name: 'Kabupaten Bangkalan', lat: -7.0400, lng: 112.7300 },
+      // Luar Jawa (kota-kota besar)
+      { name: 'Medan', lat: -3.5952, lng: 98.6722 },
+      { name: 'Palembang', lat: -2.9761, lng: 104.7754 },
+      { name: 'Makassar', lat: -5.1477, lng: 119.4327 },
+      { name: 'Denpasar', lat: -8.6705, lng: 115.2126 },
+      { name: 'Balikpapan', lat: -1.2379, lng: 116.8529 },
+      { name: 'Banjarmasin', lat: -3.3186, lng: 114.5944 },
+      { name: 'Pontianak', lat: -0.0263, lng: 109.3425 },
+      { name: 'Manado', lat: 1.4748, lng: 124.8421 },
+      { name: 'Padang', lat: -0.9471, lng: 100.4172 },
+      { name: 'Pekanbaru', lat: 0.5071, lng: 101.4478 },
+      { name: 'Batam', lat: 1.0456, lng: 104.0305 },
+      { name: 'Bandar Lampung', lat: -5.4292, lng: 105.2610 },
+      { name: 'Jambi', lat: -1.6100, lng: 103.6100 },
+      { name: 'Bengkulu', lat: -3.7928, lng: 102.2608 },
+      { name: 'Palu', lat: -0.8917, lng: 119.8707 },
+      { name: 'Kendari', lat: -3.9450, lng: 122.5000 },
+      { name: 'Mataram', lat: -8.5833, lng: 116.1167 },
+      { name: 'Kupang', lat: -10.1772, lng: 123.6070 },
+      { name: 'Jayapura', lat: -2.5330, lng: 140.7180 },
+      { name: 'Ambon', lat: -3.6954, lng: 128.1814 },
+      { name: 'Ternate', lat: 0.7833, lng: 127.3833 },
+      { name: 'Samarinda', lat: -0.5022, lng: 117.1536 },
+      { name: 'Pangkal Pinang', lat: -2.1316, lng: 106.1169 },
+      { name: 'Tanjung Pinang', lat: 0.9200, lng: 104.4600 },
+      { name: 'Gorontalo', lat: 0.5412, lng: 123.0595 }
+    ];
+
+    function toRad(deg) { return deg * Math.PI / 180; }
+
+    // Jarak haversine (km) antara dua titik koordinat.
+    function haversineKm(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Kota terdekat dari sebuah koordinat toko, berdasarkan titik pusat
+    // kota/kabupaten yang sudah didaftar di CITY_POINTS.
+    function nearestCity(lat, lng) {
+      let best = null, bestDist = Infinity;
+      for (const c of CITY_POINTS) {
+        const d = haversineKm(lat, lng, c.lat, c.lng);
+        if (d < bestDist) { bestDist = d; best = c.name; }
+      }
+      return best || 'Tidak diketahui';
+    }
+
+    // Merender (atau menyembunyikan) kartu ringkasan per kota. Dipanggil
+    // setiap kali daftar toko dirender ulang, supaya statistiknya selalu
+    // mengikuti hasil/filter yang sedang tampil. Kalau fiturnya sedang
+    // OFF, kartu selalu disembunyikan (kembali ke tampilan default).
+    function updateCitySummary(storesValid, label) {
+      const card = document.getElementById('citySummaryCard');
+      if (!features.citySummary) {
+        card.style.display = 'none';
+        return;
+      }
+      if (!storesValid.length) {
+        card.style.display = 'block';
+        card.innerHTML = `
+          <div class="city-summary-header">📊 Ringkasan per Kota</div>
+          <div class="city-summary-empty">Belum ada toko untuk diringkas pada tampilan ini.</div>`;
+        return;
+      }
+
+      const counts = new Map();
+      storesValid.forEach(store => {
+        const kota = nearestCity(store.lat, store.lng);
+        counts.set(kota, (counts.get(kota) || 0) + 1);
+      });
+
+      const rows = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+      const maxCount = rows[0][1];
+      const total = storesValid.length;
+
+      let rowsHtml = '';
+      rows.forEach(([kota, jumlah], i) => {
+        const pct = Math.max(6, Math.round((jumlah / maxCount) * 100));
+        rowsHtml += `
+          <div class="city-summary-row">
+            <div class="city-summary-rank">${i + 1}</div>
+            <div class="city-summary-name" title="${escapeHtml(kota)}">${escapeHtml(kota)}</div>
+            <div class="city-summary-bar-wrap"><div class="city-summary-bar" style="width:${pct}%"></div></div>
+            <div class="city-summary-count">${jumlah} toko</div>
+          </div>`;
+      });
+
+      card.style.display = 'block';
+      card.innerHTML = `
+        <div class="city-summary-header">📊 Ringkasan per Kota</div>
+        <div class="city-summary-sub">${label ? escapeHtml(label) : ''}</div>
+        ${rowsHtml}
+        <div class="city-summary-total"><span>Total</span><span>${total} toko · ${rows.length} kota</span></div>`;
+    }
+
+    // Buka/tutup panel daftar pilihan fitur.
+    function toggleFeaturePanel() {
+      const panel = document.getElementById('featurePanel');
+      panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+    }
+
+    // Dipanggil saat sebuah switch fitur di-toggle. Menyimpan preferensi,
+    // lalu me-render ulang tampilan yang sedang aktif (tanpa mengubah
+    // filter/pencarian yang sedang berjalan) supaya kartu ringkasan
+    // langsung muncul/hilang sesuai status barunya.
+    function onFeatureToggle(key, checked) {
+      features[key] = checked;
+      try { localStorage.setItem('nsiFeatures', JSON.stringify(features)); } catch (e) {}
+      updateFeatureBadge();
+      if (isSearchEmpty()) {
+        renderDefaultView();
+      } else {
+        cariProduk();
+      }
+    }
+
+    function updateFeatureBadge() {
+      const aktif = Object.values(features).filter(Boolean).length;
+      const badge = document.getElementById('featureActiveBadge');
+      const btn = document.getElementById('featureToggleBtn');
+      badge.style.display = aktif ? 'inline' : 'none';
+      badge.textContent = aktif;
+      btn.classList.toggle('has-active', aktif > 0);
+    }
+
+    // Memuat preferensi fitur yang tersimpan (kalau ada) saat aplikasi dibuka.
+    function initFeatureToggles() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('nsiFeatures') || '{}');
+        if (typeof saved.citySummary === 'boolean') features.citySummary = saved.citySummary;
+      } catch (e) {}
+      document.getElementById('toggleCitySummary').checked = features.citySummary;
+      updateFeatureBadge();
+    }
+
     function initMap() {
       map = L.map('map', { zoomControl: false }).setView([-6.92, 107.61], 11);
       L.control.zoom({ position: 'bottomright' }).addTo(map);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      // PENTING: tidak pakai marker cluster. Semua titik toko harus selalu
+      // tampil satu per satu di peta, berapa pun jumlahnya dan di zoom
+      // berapa pun — tidak boleh "dijumlahkan"/dikelompokkan jadi satu
+      // angka bulat saat zoom out. Ini perilaku default aplikasi.
+      markerLayer = L.layerGroup();
+      map.addLayer(markerLayer);
     }
 
     async function loadData() {
@@ -366,14 +950,47 @@
       }, 65);
 
       try {
-        const res = await fetch("https://script.google.com/macros/s/AKfycbw6VkzkHTAhyCGlmEBK_WaSO3DVzJGF3Vl95k8MTCtDIsa_zsZ1C0FBHAte74Lj7EEb2Q/exec");
-        const cache = sessionStorage.getItem('nsiData');
-        if (cache) {
-          allData = JSON.parse(cache);
+        // Pakai localStorage (bukan sessionStorage) supaya data tetap ada
+        // walau halaman benar-benar tertutup (misal karena tidak sengaja
+        // tekan back) dan dibuka lagi — tidak perlu fetch ulang dari nol.
+        // Dikasih masa berlaku supaya datanya tidak jadi basi selamanya.
+        const CACHE_MAX_AGE = 30 * 60 * 1000; // 30 menit
+        const cacheRaw = localStorage.getItem('nsiData');
+        const cacheTime = parseInt(localStorage.getItem('nsiDataTime') || '0', 10);
+        const cacheMasihValid = cacheRaw && (Date.now() - cacheTime < CACHE_MAX_AGE);
+
+        if (cacheMasihValid) {
+          allData = JSON.parse(cacheRaw);
         } else {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 detik
+          const res = await fetch(
+            "https://script.google.com/macros/s/AKfycbw6VkzkHTAhyCGlmEBK_WaSO3DVzJGF3Vl95k8MTCtDIsa_zsZ1C0FBHAte74Lj7EEb2Q/exec",
+            { signal: controller.signal }
+          );
+          clearTimeout(timeoutId);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
           allData = await res.json();
-          sessionStorage.setItem('nsiData', JSON.stringify(allData));
+          if (!Array.isArray(allData)) throw new Error('Format data tidak valid');
+          localStorage.setItem('nsiData', JSON.stringify(allData));
+          localStorage.setItem('nsiDataTime', String(Date.now()));
         }
+
+        // Bangun daftar produk secara dinamis dari data, sebagai tambahan
+        // terhadap daftar bawaan, supaya produk baru di sheet otomatis muncul.
+        const produkDariData = new Set(
+          allData.map(r => (r.produk || '').trim()).filter(Boolean)
+        );
+        produkDariData.forEach(p => {
+          if (!productList.includes(p)) productList.push(p);
+        });
+        productList.sort((a, b) => a.localeCompare(b, 'id'));
+
+        // Daftar nama toko unik, dipakai untuk autocomplete saat user
+        // mengetik nama toko (bukan cuma nama produk).
+        storeList = Array.from(new Set(
+          allData.map(r => (r.pelanggan || '').trim()).filter(Boolean)
+        )).sort((a, b) => a.localeCompare(b, 'id'));
 
         clearInterval(progressInterval);
         progressBar.style.width = '100%';
@@ -381,34 +998,75 @@
 
         setTimeout(() => {
           overlay.style.display = 'none';
-          if (!isMobile()) showSuggestions(productList);
+          // Tampilkan daftar default (sesuai chip aktif) sejak awal, di
+          // mobile maupun desktop, supaya panel hasil tidak pernah terlihat
+          // kosong/terpisah sebelum user tap search.
+          renderDefaultView();
+          showDragHintOnce();
         }, 280);
       } catch (e) {
         clearInterval(progressInterval);
-        loadingText.innerHTML = "Gagal memuat data<br><button onclick=\"loadData()\">Coba lagi</button>";
+        const pesan = e.name === 'AbortError'
+          ? 'Waktu memuat data habis (koneksi lambat)'
+          : 'Gagal memuat data';
+        loadingText.innerHTML = pesan + "<br><button onclick=\"loadData()\">Coba lagi</button>";
       }
     }
 
-    function showSuggestions(products) {
-      const suggestionsDiv = document.getElementById('suggestions');
-      if (!products.length) {
-        suggestionsDiv.style.display = 'none';
-        return;
+    // Kotak pencarian dianggap "kosong" (tidak ada pencarian/filter aktif)
+    // kalau teksnya kosong DAN tidak ada produk yang sudah dipilih sebagai
+    // chip filter. Dalam kondisi ini, chip Produk/Toko yang menentukan
+    // tampilan default.
+    function isSearchEmpty() {
+      const keyword = document.getElementById('search').value.trim();
+      return keyword.length === 0 && selectedProducts.size === 0;
+    }
+
+    // Dipanggil saat kotak pencarian kosong: menampilkan tampilan default
+    // sesuai chip yang sedang aktif (Produk atau Toko).
+    function renderDefaultView() {
+      if (chipMode === 'toko') {
+        tampilkanSemuaToko();
+      } else {
+        showProductCatalog();
       }
+    }
+
+    // Tampilan default chip "Produk": seluruh daftar produk A-Z (bukan
+    // cuma 8 teratas), diklik untuk ditambahkan sebagai chip filter.
+    function showProductCatalog() {
+      const resultsDiv = document.getElementById('results');
+      currentMode = 'none';
+      markerLayer.clearLayers();
+      markers = [];
+      document.getElementById('resultCount').textContent = '';
+      document.getElementById('resultHeaderRow').style.display = 'none';
+      updateCitySummary([], null);
+
+      const list = productList.filter(p => !selectedProducts.has(p));
       let html = '';
-      products.forEach(prod => {
-        html += `<div class="suggestion-item" onclick="selectProduct('${prod}')">${prod}</div>`;
-      });
-      suggestionsDiv.innerHTML = html;
-      suggestionsDiv.style.display = 'block';
+      if (!list.length) {
+        html = `<div class="empty-state">Tidak ada produk lain</div>`;
+      } else {
+        list.forEach(prod => {
+          html += `<div class="suggestion-item" onclick="selectProduct('${escapeHtml(prod)}')">🎨 ${escapeHtml(prod)}</div>`;
+        });
+      }
+      resultsDiv.innerHTML = html;
+      // Sama seperti daftar toko: begitu ada isi, sheet mobile langsung
+      // terbuka penuh (bukan nyangkut minimize di bawah tanpa bisa digeser).
+      setSheetState(list.length ? 'mid' : 'collapsed');
     }
 
-    // Filters the product list against whatever is currently typed, excluding
-    // products already picked as chips, then shows the dropdown.
-    function filterSuggestions(keyword) {
-      const kw = keyword.toLowerCase();
-      const filtered = productList.filter(p => !selectedProducts.has(p) && p.toLowerCase().includes(kw));
-      showSuggestions(filtered);
+    // Switch chip Produk/Toko: hanya mengganti TAMPILAN DEFAULT (saat kotak
+    // pencarian kosong & tidak ada chip filter). Kotak pencarian sendiri
+    // tidak pernah dinonaktifkan/ditutup oleh chip ini — keduanya independen.
+    function switchChipMode(mode) {
+      if (chipMode === mode) return;
+      chipMode = mode;
+      document.getElementById('modeChipProduk').classList.toggle('active', mode === 'produk');
+      document.getElementById('modeChipToko').classList.toggle('active', mode === 'toko');
+      if (isSearchEmpty()) renderDefaultView();
     }
 
     // Selecting a suggestion adds it as a chip (multi-select) instead of
@@ -416,11 +1074,10 @@
     function selectProduct(produk) {
       selectedProducts.add(produk);
       renderChips();
+      cariProduk();
       const searchInput = document.getElementById('search');
       searchInput.value = '';
       searchInput.focus();
-      filterSuggestions('');
-      cariProduk();
     }
 
     function removeProduct(produk) {
@@ -433,27 +1090,39 @@
       const chipsDiv = document.getElementById('chips');
       let html = '';
       selectedProducts.forEach(p => {
-        html += `<span class="chip">${p}<span class="remove" onclick="event.stopPropagation(); removeProduct('${p}')">✕</span></span>`;
+        html += `<span class="chip">${escapeHtml(p)}<span class="remove" onclick="event.stopPropagation(); removeProduct('${escapeHtml(p)}')" aria-label="Hapus ${escapeHtml(p)}">✕</span></span>`;
       });
       chipsDiv.innerHTML = html;
+      document.getElementById('clearChipsBtn').style.display = selectedProducts.size ? 'flex' : 'none';
+    }
+
+    function clearAllChips() {
+      selectedProducts.clear();
+      renderChips();
+      cariProduk();
     }
 
     function cariProduk() {
       const keyword = document.getElementById('search').value.toLowerCase().trim();
       const chips = Array.from(selectedProducts).map(p => p.toLowerCase());
-      const resultsDiv = document.getElementById('results');
-
-      markers.forEach(m => map.removeLayer(m));
-      markers = [];
 
       if (!chips.length && !keyword) {
-        document.getElementById('resultCount').textContent = '';
-        resultsDiv.innerHTML = `<div class="empty-state">Pilih atau ketik nama produk / toko untuk mencari</div>`;
-        setSheetState('collapsed');
+        // Tidak ada filter/teks aktif -> tampilkan default sesuai chip
+        // Produk/Toko yang sedang aktif (link "lihat semua toko" lama sudah
+        // digantikan oleh chip Toko).
+        renderDefaultView();
         return;
       }
 
-      let found = false;
+      currentMode = 'search';
+
+      // Saran nama produk yang cocok dengan ketikan — ini berlaku untuk
+      // SEMUA kondisi, tidak bergantung chip Produk/Toko mana yang sedang
+      // aktif, supaya user yang mengetik "COLORTONE" tetap melihat saran
+      // produk itu walau sedang di mode Toko.
+      const produkSuggestions = keyword
+        ? productList.filter(p => !selectedProducts.has(p) && p.toLowerCase().includes(keyword)).slice(0, 8)
+        : [];
 
       // Group matches by store instead of by row, so a store that carries
       // more than one matching product shows up once with all its products listed.
@@ -469,8 +1138,6 @@
         const matchKeyword = keyword.length > 0 && (namaToko.includes(keyword) || namaProduk.includes(keyword));
 
         if (matchChips || matchKeyword) {
-          found = true;
-
           // Prefer a store code if the data has one; otherwise fall back to
           // name + address, which together uniquely identify the same store.
           const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
@@ -489,52 +1156,160 @@
         }
       });
 
-      let html = '';
+      // Label konteks untuk kartu ringkasan per kota, mengikuti filter yang
+      // sedang aktif (chip produk dan/atau kata kunci ketikan).
+      let summaryLabel;
+      if (chips.length && keyword) {
+        summaryLabel = `Produk: ${Array.from(selectedProducts).join(', ')} · Pencarian: "${document.getElementById('search').value.trim()}"`;
+      } else if (chips.length) {
+        summaryLabel = `Produk: ${Array.from(selectedProducts).join(', ')}`;
+      } else {
+        summaryLabel = `Pencarian: "${document.getElementById('search').value.trim()}"`;
+      }
 
-      const sortedStores = Array.from(groups.values()).sort((a, b) =>
+      renderStoreList(groups, {
+        allMode: false,
+        emptyHtml: 'Tidak ditemukan hasil',
+        produkSuggestions,
+        summaryLabel
+      });
+    }
+
+    // Menampilkan seluruh toko di data tanpa perlu mengetik apa pun — supaya
+    // user bisa lihat dulu sebaran tokonya sebelum mencari sesuatu yang spesifik.
+    function tampilkanSemuaToko() {
+      currentMode = 'all';
+
+      const groups = new Map();
+      allData.forEach(row => {
+        const namaToko = (row.pelanggan || '').toLowerCase();
+        const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
+          : (namaToko + '|' + (row.alamat || '').toLowerCase());
+        if (!groups.has(key)) {
+          groups.set(key, {
+            pelanggan: row.pelanggan,
+            alamat: row.alamat,
+            latitude: row.latitude,
+            longitude: row.longitude,
+            produkSet: new Set()
+          });
+        }
+        if (row.produk) groups.get(key).produkSet.add(row.produk);
+      });
+
+      renderStoreList(groups, {
+        allMode: true,
+        emptyHtml: 'Belum ada data toko',
+        summaryLabel: 'Semua Toko'
+      });
+    }
+
+    // Fungsi bersama: mengurutkan alfabetis (A-Z), merender daftar + marker cluster.
+    function renderStoreList(groups, opts) {
+      const resultsDiv = document.getElementById('results');
+      markerLayer.clearLayers();
+      markers = [];
+      const bounds = L.latLngBounds([]);
+
+      let storesArr = Array.from(groups.values()).map(store => {
+        const lat = parseFloat(store.latitude);
+        const lng = parseFloat(store.longitude);
+        const valid = isFinite(lat) && isFinite(lng);
+        return { ...store, lat, lng, valid };
+      });
+
+      storesArr.sort((a, b) =>
         (a.pelanggan || '').localeCompare(b.pelanggan || '', 'id', { sensitivity: 'base' })
       );
 
-      sortedStores.forEach(store => {
+      let html = '';
+      let skipped = 0;
+
+      storesArr.forEach(store => {
+        // Lewati toko dengan koordinat kosong/rusak alih-alih membuat marker
+        // di posisi NaN yang bisa membuat Leaflet error atau marker hilang.
+        if (!store.valid) { skipped++; return; }
+
         const produkText = Array.from(store.produkSet).join(', ');
         const idx = markers.length;
+        const namaAman = escapeHtml(store.pelanggan);
+        const alamatAman = escapeHtml(store.alamat);
+        const produkAman = escapeHtml(produkText);
 
         html += `
-            <div class="toko-item" onclick="focusMarker(${idx},${store.latitude},${store.longitude})">
+            <div class="toko-item" onclick="focusMarker(${idx},${store.lat},${store.lng})">
               <div class="row">
                 <span style="font-size:18px;">🏪</span>
-                <span class="title">${store.pelanggan}</span>
+                <span class="title">${namaAman}</span>
               </div>
-              <div class="addr">${store.alamat}</div>
-              <div class="prod">🎨 ${produkText}</div>
+              <div class="addr">${alamatAman}</div>
+              <div class="prod">🎨 ${produkAman}</div>
             </div>`;
 
-        const marker = L.marker([parseFloat(store.latitude), parseFloat(store.longitude)])
-          .addTo(map)
-          .bindPopup(`<b>${store.pelanggan}</b><br>${store.alamat}<br>${produkText}<br><button class="popup-nav-btn" onclick="window.open('https://www.google.com/maps?q=${store.latitude},${store.longitude}','_blank')">➡ Navigasi Google Maps</button>`);
+        const marker = L.marker([store.lat, store.lng])
+          .bindPopup(`<b>${namaAman}</b><br>${alamatAman}<br>${produkAman}<br><button class="popup-nav-btn" onclick="window.open('https://www.google.com/maps?q=${store.lat},${store.lng}','_blank')">➡ Navigasi Google Maps</button>`);
+        markerLayer.addLayer(marker);
         markers.push(marker);
+        bounds.extend([store.lat, store.lng]);
       });
 
-      document.getElementById('resultCount').textContent = found ? (markers.length + ' toko ditemukan') : 'Tidak ditemukan hasil';
-      resultsDiv.innerHTML = found ? html : `<div class="empty-state">Tidak ditemukan hasil</div>`;
-      setSheetState(found ? 'full' : 'collapsed');
+      const total = markers.length;
+      let label = '';
+      if (total > 0) {
+        label = opts.allMode
+          ? `Menampilkan semua ${total} toko`
+          : `${total} toko ditemukan`;
+        if (skipped) label += ` (${skipped} tanpa koordinat valid dilewati)`;
+      }
 
-      if (markers.length > 0) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.15));
+      // Saran nama produk yang cocok (kalau ada) ditampilkan di ATAS daftar
+      // toko — muncul terlepas dari chip Produk/Toko mana yang sedang aktif,
+      // karena kolom pencarian berlaku untuk semua, bukan cuma toko.
+      let suggestionHtml = '';
+      const produkSuggestions = opts.produkSuggestions || [];
+      if (produkSuggestions.length) {
+        suggestionHtml += `<div class="suggestion-group-label">Produk</div>`;
+        produkSuggestions.forEach(prod => {
+          suggestionHtml += `<div class="suggestion-item" onclick="selectProduct('${escapeHtml(prod)}')">🎨 ${escapeHtml(prod)}</div>`;
+        });
+        if (total > 0) suggestionHtml += `<div class="suggestion-group-label">Toko</div>`;
+      }
+
+      const bodyHtml = total > 0
+        ? html
+        : (produkSuggestions.length ? '' : `<div class="empty-state">${opts.emptyHtml}</div>`);
+
+      document.getElementById('resultCount').textContent = label;
+      document.getElementById('resultHeaderRow').style.display = total ? 'flex' : 'none';
+      resultsDiv.innerHTML = suggestionHtml + bodyHtml;
+      setSheetState((total > 0 || produkSuggestions.length) ? 'mid' : 'collapsed');
+
+      if (total > 0) map.fitBounds(bounds.pad(0.15));
+
+      updateCitySummary(storesArr.filter(s => s.valid), opts.summaryLabel);
     }
 
     function focusMarker(i, lat, lng) {
-      map.flyTo([lat, lng], 15);
       setSheetState('collapsed');
-      setTimeout(() => {
-        if (markers[i]) markers[i].openPopup();
-      }, 500);
+      const marker = markers[i];
+      if (marker) {
+        map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 15));
+        marker.openPopup();
+      } else {
+        map.flyTo([lat, lng], 15);
+      }
     }
 
     // ---- Mobile bottom sheet (draggable results panel) ----
     const resultsCard = document.getElementById('resultsCard');
     const sheetHeader = document.getElementById('sheetHeader');
     const MOBILE_QUERY = '(max-width: 768px)';
-    let sheetState = 'collapsed'; // 'collapsed' | 'half' | 'full'
+    let sheetState = 'collapsed'; // 'collapsed' | 'mid' | 'full' — 3 titik snap.
+                                   // 'mid' (75% tinggi panel) adalah tampilan
+                                   // default begitu ada hasil/daftar untuk
+                                   // ditampilkan (baik daftar default maupun
+                                   // hasil pencarian) — 'full' cuma dicapai
+                                   // lewat tarik/tap eksplisit oleh user.
     let sheetTranslate = 0;
     let dragStartY = 0;
     let dragStartTranslate = 0;
@@ -548,10 +1323,11 @@
     function getSnapOffsets() {
       const h = resultsCard.offsetHeight || Math.round(window.innerHeight * 0.85);
       const collapsedVisible = 64;
-      const halfVisible = window.innerHeight * 0.5;
+      // 'mid': menggeser panel turun 25% dari tingginya sendiri, sehingga
+      // 75% panel tetap terlihat (peta masih kelihatan di sisa 25% layar).
       return {
         collapsed: Math.max(0, h - collapsedVisible),
-        half: Math.max(0, h - halfVisible),
+        mid: Math.round(h * 0.25),
         full: 0
       };
     }
@@ -576,6 +1352,25 @@
       dragStartTranslate = sheetTranslate;
       resultsCard.style.transition = 'none';
       sheetHeader.setPointerCapture(e.pointerId);
+      dismissDragHint();
+    }
+
+    // Menampilkan hint (bounce + teks singkat) sekali saja seumur hidup
+    // browser user, supaya orang yang belum pernah pakai Google Maps tahu
+    // bahwa panel bawah ini bisa ditarik naik/turun.
+    function showDragHintOnce() {
+      if (!isMobile()) return;
+      if (localStorage.getItem('sheetHintShown')) return;
+      sheetHeader.classList.add('hint-bounce');
+      document.getElementById('sheetHintText').style.display = 'block';
+      setTimeout(dismissDragHint, 2600);
+    }
+
+    function dismissDragHint() {
+      sheetHeader.classList.remove('hint-bounce');
+      const hintText = document.getElementById('sheetHintText');
+      if (hintText) hintText.style.display = 'none';
+      localStorage.setItem('sheetHintShown', '1');
     }
 
     function duringDrag(e) {
@@ -592,19 +1387,21 @@
       dragging = false;
 
       if (!dragMoved) {
-        // Treat as a tap on the handle: cycle collapsed -> half -> full -> collapsed.
-        const next = sheetState === 'collapsed' ? 'half' : sheetState === 'half' ? 'full' : 'collapsed';
-        setSheetState(next);
+        // Tap pada handle: siklus collapsed -> mid -> full -> collapsed.
+        const urutan = { collapsed: 'mid', mid: 'full', full: 'collapsed' };
+        setSheetState(urutan[sheetState] || 'mid');
         return;
       }
 
+      // Snap ke titik terdekat dari 3 pilihan (collapsed/mid/full)
+      // berdasarkan posisi terakhir saat jari dilepas.
       const offsets = getSnapOffsets();
       let nearest = 'collapsed';
-      let best = Math.abs(sheetTranslate - offsets.collapsed);
-      ['half', 'full'].forEach(key => {
-        const dist = Math.abs(sheetTranslate - offsets[key]);
-        if (dist < best) { best = dist; nearest = key; }
-      });
+      let jarakTerdekat = Infinity;
+      for (const state in offsets) {
+        const jarak = Math.abs(sheetTranslate - offsets[state]);
+        if (jarak < jarakTerdekat) { jarakTerdekat = jarak; nearest = state; }
+      }
       setSheetState(nearest);
     }
 
@@ -623,55 +1420,127 @@
     }
     window.addEventListener('resize', handleViewportChange);
 
-    document.addEventListener('click', e => {
-      if (!e.target.closest('.search-card')) {
-        document.getElementById('suggestions').style.display = 'none';
-      }
-    });
-
     const searchInput = document.getElementById('search');
 
-    // Clicking or focusing the search field shows the product suggestion list.
-    searchInput.addEventListener('focus', () => {
-      filterSuggestions(searchInput.value.trim());
-    });
-
-    // Typing a store name or product name filters suggestions live and searches as you type.
+    // Mengetik langsung menjalankan pencarian sungguhan (gabungan produk +
+    // toko yang cocok) — di-debounce supaya tidak me-render ulang semua
+    // marker di setiap ketukan tombol. Begitu kotak dikosongkan lagi,
+    // cariProduk() otomatis kembali ke tampilan default sesuai chip aktif.
+    let searchDebounceTimer = null;
     searchInput.addEventListener('input', () => {
-      const val = searchInput.value.trim();
-      filterSuggestions(val);
-      cariProduk();
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(cariProduk, 250);
     });
 
     // Pressing Enter runs the search and closes the suggestion list.
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        document.getElementById('suggestions').style.display = 'none';
+        clearTimeout(searchDebounceTimer);
         cariProduk();
       }
     });
 
     // Explicit search button, same result as pressing Enter.
     document.getElementById('searchBtn').addEventListener('click', () => {
-      document.getElementById('suggestions').style.display = 'none';
+      clearTimeout(searchDebounceTimer);
       cariProduk();
     });
 
-    document.getElementById('gpsBtn').onclick = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(p => {
-          const ll = [p.coords.latitude, p.coords.longitude];
-          map.flyTo(ll, 15);
-          L.marker(ll).addTo(map).bindPopup('Lokasi Saya').openPopup();
-        });
+    document.getElementById('clearChipsBtn').addEventListener('click', clearAllChips);
+
+    // ---- Antisipasi tombol/gesture back tidak sengaja ----
+    // Trik umum di app Android: setiap kali kita "menempati" sebuah state
+    // history, back tidak langsung keluar dari halaman. Ada 3 lapis, dari
+    // state paling "dalam" ke halaman utama:
+    // 1) Kalau bottom sheet masih terbuka (full), back pertama menutup
+    //    itu dulu (kembali ke collapsed).
+    // 2) Kalau masih ada pencarian/filter aktif (teks di kolom cari atau
+    //    chip produk terpilih), back berikutnya membersihkan itu dan
+    //    membawa user ke HALAMAN UTAMA (tampilan default) — bukan langsung
+    //    menutup aplikasi.
+    // 3) Baru di halaman utama (tanpa pencarian aktif, panel tertutup),
+    //    back berikutnya menampilkan peringatan "tekan sekali lagi untuk
+    //    keluar"; back kedua dalam 2 detik itu yang benar-benar keluar.
+    let awaitingSecondBack = false;
+    let exitTimer = null;
+
+    // Kembali ke tampilan awal: kosongkan kolom cari & chip produk terpilih,
+    // lalu tampilkan daftar default sesuai chip Produk/Toko yang aktif,
+    // dengan panel tetap tertutup (bukan langsung terbuka penuh lagi).
+    function kembaliKeHalamanUtama() {
+      document.getElementById('search').value = '';
+      selectedProducts.clear();
+      renderChips();
+      renderDefaultView();
+      setSheetState('collapsed');
+    }
+
+    function pushBackGuard() {
+      history.pushState({ nsiGuard: true }, '', location.href);
+    }
+
+    function showExitToast() {
+      const toast = document.getElementById('exitToast');
+      toast.style.display = 'flex';
+      clearTimeout(exitTimer);
+      exitTimer = setTimeout(() => {
+        toast.style.display = 'none';
+        awaitingSecondBack = false;
+      }, 2000);
+    }
+
+    // Tombol "Keluar" di dalam toast (opsi C): karena saat toast tampil kita
+    // sudah dalam kondisi awaitingSecondBack = true, memicu history.back()
+    // di sini akan ditangkap oleh popstate di bawah dan masuk ke cabang
+    // "back kedua" — yaitu benar-benar keluar, sama seperti menekan
+    // tombol/gesture back fisik sekali lagi. Tidak perlu logika keluar baru.
+    document.getElementById('exitToastBtn').addEventListener('click', () => {
+      history.back();
+    });
+
+    window.addEventListener('popstate', () => {
+      const sheetTerbuka = isMobile() && sheetState !== 'collapsed';
+      const adaPencarianAktif = !isSearchEmpty();
+
+      if (sheetTerbuka) {
+        // Turun satu tingkat dulu (full -> mid -> collapsed), bukan
+        // langsung loncat ke collapsed dari full.
+        setSheetState(sheetState === 'full' ? 'mid' : 'collapsed');
+        pushBackGuard();
+        return;
       }
-    };
+
+      if (adaPencarianAktif) {
+        // Panel sudah tertutup tapi masih ada pencarian/chip aktif -> jangan
+        // langsung keluar, kembalikan dulu ke halaman utama.
+        kembaliKeHalamanUtama();
+        pushBackGuard();
+        return;
+      }
+
+      if (!awaitingSecondBack) {
+        // Back pertama tanpa ada apa pun untuk ditutup: jangan langsung
+        // keluar, kasih peringatan (toast) + tombol "Keluar" langsung,
+        // dan pasang penjaga lagi.
+        awaitingSecondBack = true;
+        showExitToast();
+        pushBackGuard();
+      } else {
+        // Ini back kedua dalam waktu singkat (toast masih tampil), atau
+        // tombol "Keluar" di toast ditekan -> biarkan keluar beneran,
+        // tidak pasang penjaga baru.
+        clearTimeout(exitTimer);
+        awaitingSecondBack = false;
+      }
+    });
 
     window.onload = () => {
       initMap();
+      initFeatureToggles();
       loadData();
       handleViewportChange();
+      pushBackGuard();
     };
   </script>
 </body>
