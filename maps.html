@@ -1447,9 +1447,11 @@
             }
           });
           features[key] = true;
+          // Setelah memilih fitur (ON) → tutup popover langsung
+          closeFeaturePanel();
         } else {
           features[key] = false;
-          // Saat fitur dimatikan → tutup panel Analisis
+          // Saat fitur dimatikan → tutup popover juga
           closeFeaturePanel();
         }
 
