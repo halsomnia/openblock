@@ -268,8 +268,8 @@
     }
 
     /* Toolbar di dalam header sheet: berisi tombol "Fitur" untuk
-       rekap/analisis hasil pencarian (Ringkasan per Kota, Kepadatan
-       Toko). Ditaruh di dalam sheet karena fungsi-fungsi ini memang
+       rekap/analisis hasil pencarian (Ringkasan per Kota). Ditaruh
+       di dalam sheet karena fungsi-fungsi ini memang
        untuk menganalisis hasil yang sedang tampil di sheet, bukan
        kontrol independen dari peta. Selalu terlihat (tidak ikut
        disembunyikan seperti .result-header-row) supaya tombol Fitur
@@ -368,7 +368,6 @@
        !important perlu karena beberapa elemen ini juga di-toggle lewat
        inline style oleh JS (mis. resultsDiv.style.display) — aturan
        !important di sini akan tetap menang tanpa mengubah logic JS yang ada. */
-    .results-card.list-collapsed .feature-panel,
     .results-card.list-collapsed .city-summary-card,
     .results-card.list-collapsed .result-header-row,
     .results-card.list-collapsed #results {
@@ -405,13 +404,25 @@
       line-height: 1.4;
     }
 
+    /* Popover mengambang — hanya muncul saat tombol Analisis diklik.
+       position:fixed + z-index tinggi supaya tidak mendorong layout sheet
+       dan tidak ter-clip overflow:hidden pada .results-card. */
     .feature-panel {
-      background: var(--canvas);
+      position: fixed;
+      z-index: 900;
+      background: var(--surface);
       border: 1px solid var(--line);
       border-radius: var(--r-sm);
-      margin: 10px 16px 0;
+      box-shadow: var(--shadow-md);
+      margin: 0;
       padding: 6px;
-      flex-shrink: 0;
+      width: 280px;
+      max-width: calc(100vw - 24px);
+      animation: featurePanelIn 0.18s var(--ease);
+    }
+    @keyframes featurePanelIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .feature-panel-title {
       font-size: 11px;
@@ -429,7 +440,7 @@
       padding: 10px 10px;
       border-radius: var(--r-xs);
     }
-    .feature-row:hover { background: var(--surface); }
+    .feature-row:hover { background: var(--canvas); }
     .feature-text { min-width: 0; }
     .feature-title { font-size: 13px; font-weight: 500; }
     .feature-desc { font-size: 12px; color: var(--ink-soft); margin-top: 2px; line-height: 1.4; }
@@ -453,47 +464,6 @@
     }
     .switch input:checked + .slider { background-color: var(--accent); }
     .switch input:checked + .slider:before { transform: translateX(16px); }
-
-    /* Legenda heatmap — muncul di pojok kiri-bawah peta selama fitur
-       "Kepadatan Toko" aktif, terlepas dari heatmap-nya sendiri sedang
-       tampil atau sedang digantikan dot di zoom dekat. */
-    .heatmap-legend {
-      position: absolute;
-      left: 16px;
-      bottom: 24px;
-      z-index: 500;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--r-xs);
-      box-shadow: var(--shadow-sm);
-      padding: 10px 14px;
-      pointer-events: none;
-    }
-    @media (max-width: 768px) {
-      .heatmap-legend {
-        bottom: 140px; /* di atas sheet collapsed */
-      }
-    }
-    .heatmap-legend-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--ink);
-      margin-bottom: 6px;
-    }
-    .heatmap-legend-bar {
-      width: 120px;
-      height: 8px;
-      border-radius: var(--r-pill);
-      border: none;
-      background: linear-gradient(to right, #4f46e5, #06b6d4, #22c55e, #f59e0b, #ef4444);
-    }
-    .heatmap-legend-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      color: var(--ink-soft);
-      margin-top: 4px;
-    }
 
     /* Kartu ringkasan per kota — di dalam sheet, bisa di-scroll penuh
        sampai teks paling bawah (padding-bottom besar). */
@@ -948,11 +918,6 @@
 <body>
   <div class="app">
     <div id="map"></div>
-    <div class="heatmap-legend" id="heatmapLegend" style="display:none;">
-      <div class="heatmap-legend-title">Kepadatan Toko</div>
-      <div class="heatmap-legend-bar"></div>
-      <div class="heatmap-legend-labels"><span>Jarang</span><span>Padat</span></div>
-    </div>
 
     <div class="panel">
       <div class="search-card">
@@ -990,36 +955,28 @@
               </svg>
             </button>
           </div>
-          <div class="feature-panel" id="featurePanel" style="display:none;">
-            <div class="feature-panel-title">Pilihan Fitur</div>
-            <div class="feature-row">
-              <div class="feature-text">
-                <div class="feature-title">📊 Ringkasan per Kota</div>
-                <div class="feature-desc">Tampilkan jumlah toko per kota.</div>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="toggleCitySummary" onchange="onFeatureToggle('citySummary', this.checked)">
-                <span class="slider"></span>
-              </label>
-            </div>
-            <div class="feature-row">
-              <div class="feature-text">
-                <div class="feature-title">🔥 Kepadatan Toko</div>
-                <div class="feature-desc">Menampilkan wilayah yang padat atau kosong.</div>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="toggleHeatmap" onchange="onFeatureToggle('heatmap', this.checked)">
-                <span class="slider"></span>
-              </label>
-            </div>
-          </div>
-          <!-- Ringkasan per kota sekarang di dalam sheet, di bawah panel Fitur -->
+          <!-- Ringkasan per kota di dalam sheet -->
           <div class="city-summary-card" id="citySummaryCard" style="display:none;"></div>
           <div class="result-header-row" id="resultHeaderRow">
             <div id="resultCount"></div>
           </div>
         </div>
         <div id="results"></div>
+      </div>
+    </div>
+
+    <!-- Popover Analisis mengambang (di luar sheet supaya tidak ter-clip) -->
+    <div class="feature-panel" id="featurePanel" style="display:none;" role="dialog" aria-label="Pilihan Fitur">
+      <div class="feature-panel-title">Pilihan Fitur</div>
+      <div class="feature-row">
+        <div class="feature-text">
+          <div class="feature-title">📊 Ringkasan per Kota</div>
+          <div class="feature-desc">Tampilkan jumlah toko per kota.</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggleCitySummary" onchange="onFeatureToggle('citySummary', this.checked)">
+          <span class="slider"></span>
+        </label>
       </div>
     </div>
 
@@ -1045,9 +1002,8 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script>
-    let map, markerLayer, heatLayer;
+    let map, markerLayer;
     // Dipakai supaya render viewport-culling otomatis (debounced, lihat
     // initMap) tidak ikut jalan tepat setelah focusMarker() memindahkan
     // peta ke satu toko — kalau ikut jalan, clearLayers()-nya akan
@@ -1058,12 +1014,6 @@
     // ✕ / reset ditekan, supaya peta selalu kembali ke posisi ini).
     const DEFAULT_MAP_CENTER = [-6.92, 107.61];
     const DEFAULT_MAP_ZOOM = 11;
-    // Ambang zoom transisi heatmap <-> dot. Di bawah ini ("zoom jauh",
-    // level provinsi/kota besar): heatmap tampil, dot disembunyikan — dot
-    // di zoom ini akan saling tumpuk dan tidak terbaca. Di angka ini ke
-    // atas ("zoom dekat", level kecamatan/jalan): heatmap otomatis
-    // memudar/hilang, dot individual muncul lagi seperti biasa.
-    const HEATMAP_ZOOM_THRESHOLD = 13;
     // currentStores: hasil render aktif saat ini (SEMUA toko yang cocok
     // dengan filter, urut sama seperti daftar di panel). Tiap entri punya
     // slot `marker` yang diisi belakangan (lazy) hanya kalau titiknya
@@ -1075,7 +1025,7 @@
     // Fitur tambahan (on/off), tersimpan supaya pilihan user tidak hilang
     // saat halaman dibuka lagi. Kalau semua fitur off, tampilan kembali
     // ke default (daftar toko/produk biasa, tanpa panel tambahan apa pun).
-    let features = { citySummary: false, heatmap: false };
+    let features = { citySummary: false };
     // Cache hasil toko terakhir + label, supaya toggle Ringkasan per Kota
     // bisa mengisi kartu tanpa harus render ulang + fitBounds (yang bikin
     // peta loncat & sheet minimize).
@@ -1110,12 +1060,13 @@
       }
       // Halaman utama (belum ketik / belum pilih chip mode): sheet hidden.
       // forceOpen dipakai saat user menekan chip Produk atau Toko.
-      if (isSearchEmpty() && !featurePanelOpen && !forceOpen) {
+      // Popover Analisis mengambang — tidak memaksa sheet tetap terbuka.
+      if (isSearchEmpty() && !forceOpen) {
         setSheetState('hidden');
         return;
       }
       // Ada hasil / force open → buka ke mid (80%). Tidak pernah auto-full.
-      setSheetState(hasContent || featurePanelOpen || forceOpen ? 'mid' : 'hidden');
+      setSheetState(hasContent || forceOpen ? 'mid' : 'hidden');
     }
     let productList = [
       "CAT KAYU", "CG TAMITEX", "COLORTONE", "CT APOLLO",
@@ -1365,19 +1316,13 @@
         <div class="city-summary-total"><span>Total</span><span>${total} toko · ${rows.length} kota</span></div>`;
     }
 
-    // Buka/tutup panel daftar pilihan fitur.
-    // Panel fitur ini sekarang ada DI DALAM sheet hasil (.results-card),
-    // tepat di bawah tombol "Fitur" di sheet-toolbar — karena fungsi
-    // fitur ini (Ringkasan per Kota, Kepadatan Toko) memang untuk
-    // merekap/menganalisis hasil pencarian yang sedang tampil di sheet
-    // itu sendiri. Karena itu, begitu panel dibuka, sheet-nya ikut
-    // dibuka ke 'mid' supaya panelnya kelihatan (bukan dipaksa collapsed
-    // seperti dulu waktu panel ini masih kartu terpisah di atas peta).
+    // Popover Analisis mengambang: hanya muncul saat tombol diklik,
+    // diposisikan di dekat tombol (fixed), tidak mendorong layout sheet.
     let featurePanelOpen = false;
 
-    // Kembalikan daftar ke ukuran normal kalau sedang dikecilkan (Opsi 1
-    // desktop) — dipanggil dari titik-titik di mana konten baru perlu
-    // langsung terlihat (buka panel Analisis, hasil pencarian baru, dst).
+    // Kembalikan daftar ke ukuran normal kalau sedang dikecilkan (desktop) —
+    // dipanggil dari titik-titik di mana konten baru perlu langsung terlihat
+    // (hasil pencarian baru, dst). Buka popover Analisis TIDAK memaksa expand.
     function expandListIfCollapsed() {
       const card = document.getElementById('resultsCard');
       if (!card || !card.classList.contains('list-collapsed')) return;
@@ -1388,6 +1333,31 @@
       if (btn) { btn.title = 'Kecilkan daftar'; btn.setAttribute('aria-label', 'Kecilkan daftar'); }
     }
 
+    // Posisikan popover di bawah (atau di atas jika ruang kurang) tombol Analisis.
+    function positionFeaturePanel() {
+      const btn = document.getElementById('featureToggleBtn');
+      const panel = document.getElementById('featurePanel');
+      if (!btn || !panel || panel.style.display === 'none') return;
+      const rect = btn.getBoundingClientRect();
+      const panelW = Math.min(280, window.innerWidth - 24);
+      let left = rect.left;
+      if (left + panelW > window.innerWidth - 12) {
+        left = window.innerWidth - panelW - 12;
+      }
+      if (left < 12) left = 12;
+
+      // Ukur tinggi panel setelah tampil
+      const panelH = panel.offsetHeight || 160;
+      let top = rect.bottom + 8;
+      if (top + panelH > window.innerHeight - 12) {
+        top = rect.top - panelH - 8;
+        if (top < 12) top = 12;
+      }
+      panel.style.top = top + 'px';
+      panel.style.left = left + 'px';
+      panel.style.width = panelW + 'px';
+    }
+
     function toggleFeaturePanel() {
       const btn = document.getElementById('featureToggleBtn');
       if (!btn || btn.disabled || btn.style.display === 'none') return;
@@ -1395,20 +1365,23 @@
       const panel = document.getElementById('featurePanel');
       if (!panel) return;
       const willOpen = panel.style.display === 'none' || !panel.style.display;
-      panel.style.display = willOpen ? 'block' : 'none';
-      featurePanelOpen = willOpen;
-      btn.classList.toggle('panel-open', willOpen);
-
-      if (willOpen) expandListIfCollapsed();
-
-      if (!isMobile()) return;
-      if (willOpen) setSheetState('mid');
+      if (willOpen) {
+        panel.style.display = 'block';
+        featurePanelOpen = true;
+        btn.classList.add('panel-open');
+        // Restart animasi tiap buka
+        panel.style.animation = 'none';
+        void panel.offsetWidth;
+        panel.style.animation = '';
+        positionFeaturePanel();
+      } else {
+        closeFeaturePanel();
+      }
     }
 
     // Opsi 1 (desktop): kecilkan/perbesar daftar hasil — search bar & mode
-    // chip tetap terlihat, hanya #results/city-summary/panel Analisis yang
-    // disembunyikan supaya .results-card menyusut jadi seukuran toolbar
-    // saja, memberi ruang lebih untuk peta di baliknya.
+    // chip tetap terlihat, hanya #results/city-summary yang disembunyikan
+    // supaya .results-card menyusut jadi seukuran toolbar saja.
     function toggleListCollapse() {
       const card = document.getElementById('resultsCard');
       const icon = document.getElementById('collapseListIcon');
@@ -1420,6 +1393,8 @@
         btn.title = collapsed ? 'Perbesar daftar' : 'Kecilkan daftar';
         btn.setAttribute('aria-label', collapsed ? 'Perbesar daftar' : 'Kecilkan daftar');
       }
+      // Popover tetap bisa terbuka saat list collapsed; re-posisi saja
+      if (featurePanelOpen) positionFeaturePanel();
     }
 
     // Tutup panel Analisis (helper)
@@ -1431,9 +1406,33 @@
       if (btn) btn.classList.remove('panel-open');
     }
 
+    // Klik di luar popover → tutup (tombol Analisis ditangani oleh toggle-nya sendiri)
+    document.addEventListener('pointerdown', function(e) {
+      if (!featurePanelOpen) return;
+      const panel = document.getElementById('featurePanel');
+      const btn = document.getElementById('featureToggleBtn');
+      if (!panel) return;
+      if (panel.contains(e.target)) return;
+      if (btn && btn.contains(e.target)) return;
+      closeFeaturePanel();
+    });
+
+    window.addEventListener('resize', function() {
+      if (featurePanelOpen) positionFeaturePanel();
+    });
+
     // Dipanggil saat sebuah switch fitur di-toggle.
     // Hanya SATU fitur yang boleh ON (mutual exclusive).
     function onFeatureToggle(key, checked) {
+      // CATATAN PERBAIKAN BUG "toggle ON otomatis menutup panel":
+      // Sebelumnya, satu error tak terduga di salah satu langkah sinkronisasi
+      // UI di bawah (mis. updateCitySummary) akan
+      // ditangkap oleh catch paling luar, yang lalu MEMAKSA mematikan KEDUA
+      // toggle dan MENUTUP panel Analisis — walau fitur yang baru saja
+      // dinyalakan user sebenarnya baik-baik saja. Sekarang tiap langkah
+      // diisolasi try/catch masing-masing, supaya satu langkah gagal tidak
+      // menjatuhkan/mereset seluruh state, dan panel TIDAK ditutup paksa
+      // hanya karena satu efek samping (mis. update kartu ringkasan) error.
       try {
         if (checked) {
           // Matikan semua fitur lain (hanya satu yang boleh aktif)
@@ -1441,51 +1440,46 @@
             if (k !== key) {
               features[k] = false;
               const el = document.getElementById(
-                k === 'citySummary' ? 'toggleCitySummary' : 'toggleHeatmap'
+                k === 'citySummary' ? 'toggleCitySummary' : null
               );
               if (el) el.checked = false;
             }
           });
           features[key] = true;
-          // Setelah memilih fitur (ON) → tutup popover langsung
+          // Saat fitur dinyalakan → tutup panel Analisis otomatis
+          // (user tidak perlu menutup manual)
           closeFeaturePanel();
         } else {
           features[key] = false;
-          // Saat fitur dimatikan → tutup popover juga
+          // Saat fitur dimatikan → tutup panel Analisis
           closeFeaturePanel();
         }
+      } catch (err) {
+        console.error('onFeatureToggle: gagal set state fitur', err);
+        return;
+      }
 
-        try { localStorage.setItem('nsiFeatures', JSON.stringify(features)); } catch (e) {}
-        updateFeatureBadge();
+      try { localStorage.setItem('nsiFeatures', JSON.stringify(features)); } catch (e) {}
+      try { updateFeatureBadge(); } catch (e) { console.error('updateFeatureBadge error:', e); }
 
-        // Sinkronkan kartu ringkasan & visibility list (tanpa re-render daftar).
-        // Selalu dipanggil (bukan hanya saat key === 'citySummary') karena
-        // updateCitySummary() sendiri sudah memeriksa features.citySummary —
-        // jika fitur lain (mis. Kepadatan Toko) baru saja mematikannya, kartu
-        // ini harus ikut disembunyikan saat itu juga, bukan tersisa nyangkut
-        // menampilkan data lama di layar.
-        updateCitySummary(lastSummaryStores, lastSummaryLabel);
-        applyCitySummaryListVisibility();
-        updateHeatmapDisplay();
-        updateFeatureButtonState();
+      // Sinkronkan kartu ringkasan & visibility list (tanpa re-render daftar).
+      // Selalu dipanggil (bukan hanya saat key === 'citySummary') karena
+      // updateCitySummary() sendiri sudah memeriksa features.citySummary —
+      // jika fitur lain baru saja mematikannya, kartu ini harus ikut
+      // disembunyikan saat itu juga, bukan tersisa nyangkut menampilkan
+      // data lama di layar.
+      // Masing-masing dibungkus try/catch SENDIRI (bukan satu try besar)
+      // supaya kegagalan di satu langkah tidak ikut membatalkan langkah lain
+      // ataupun memicu reset paksa toggle/panel.
+      try { updateCitySummary(lastSummaryStores, lastSummaryLabel); } catch (e) { console.error('updateCitySummary error:', e); }
+      try { applyCitySummaryListVisibility(); } catch (e) { console.error('applyCitySummaryListVisibility error:', e); }
+      try { updateFeatureButtonState(); } catch (e) { console.error('updateFeatureButtonState error:', e); }
 
-        // Perilaku sheet sesuai fitur:
-        // - Kepadatan Toko ON  → fit peta + collapse (heatmap terlihat penuh)
-        // - Ringkasan per Kota ON → sheet full (daftar kota bisa di-scroll lega)
-        // - Fitur OFF / lainnya → sheet mid 80%
-        if (key === 'heatmap' && checked) {
-          if (currentStores.length > 0 && map) {
-            try {
-              const bounds = L.latLngBounds(currentStores.map(s => [s.lat, s.lng]));
-              if (bounds.isValid()) {
-                map.fitBounds(bounds.pad(0.18));
-              }
-            } catch (e) {
-              console.warn('fitBounds heatmap', e);
-            }
-          }
-          setSheetState('collapsed');
-        } else if (key === 'citySummary' && checked) {
+      // Perilaku sheet sesuai fitur:
+      // - Ringkasan per Kota ON → sheet full (daftar kota bisa di-scroll lega)
+      // - Fitur OFF / lainnya → sheet mid 80%
+      try {
+        if (key === 'citySummary' && checked) {
           setSheetState('full');
         } else {
           if (sheetState !== 'hidden') {
@@ -1493,21 +1487,7 @@
           }
         }
       } catch (err) {
-        console.error('onFeatureToggle error:', err);
-        // Recover: matikan semua fitur supaya UI tidak stuck
-        try {
-          features.citySummary = false;
-          features.heatmap = false;
-          const tc = document.getElementById('toggleCitySummary');
-          const th = document.getElementById('toggleHeatmap');
-          if (tc) tc.checked = false;
-          if (th) th.checked = false;
-          updateFeatureBadge();
-          closeFeaturePanel();
-          updateHeatmapDisplay();
-          applyCitySummaryListVisibility();
-          updateFeatureButtonState();
-        } catch (e2) {}
+        console.error('onFeatureToggle: gagal set sheet state', err);
       }
     }
 
@@ -1576,14 +1556,8 @@
       try {
         const saved = JSON.parse(localStorage.getItem('nsiFeatures') || '{}');
         if (typeof saved.citySummary === 'boolean') features.citySummary = saved.citySummary;
-        if (typeof saved.heatmap === 'boolean') features.heatmap = saved.heatmap;
       } catch (e) {}
-      // Jika keduanya tersimpan ON, prioritaskan citySummary
-      if (features.citySummary && features.heatmap) {
-        features.heatmap = false;
-      }
       document.getElementById('toggleCitySummary').checked = features.citySummary;
-      document.getElementById('toggleHeatmap').checked = features.heatmap;
       updateFeatureBadge();
     }
 
@@ -1612,18 +1586,6 @@
       markerLayer = L.layerGroup();
       map.addLayer(markerLayer);
 
-      // Layer heatmap (Leaflet.heat) — dibangun dari currentStores lewat
-      // rebuildHeatmapLayer(), tapi baru ditambahkan/dilepas dari peta oleh
-      // updateHeatmapDisplay() sesuai status fitur & level zoom. Belum
-      // ditambahkan ke peta di sini karena defaultnya fitur ini off.
-      heatLayer = L.heatLayer([], {
-        radius: 28,
-        blur: 15,
-        maxZoom: 17,
-        minOpacity: 0.45,
-        gradient: { 0.2: '#4f46e5', 0.4: '#06b6d4', 0.6: '#22c55e', 0.8: '#f59e0b', 1.0: '#ef4444' }
-      });
-
       let viewportRenderTimer = null;
       map.on('moveend zoomend', () => {
         clearTimeout(viewportRenderTimer);
@@ -1639,11 +1601,6 @@
           renderVisibleMarkers();
         }, 120);
       });
-
-      // Transisi heatmap <-> dot murni berdasarkan level zoom peta —
-      // dipisah dari listener di atas (tidak di-debounce) supaya beralihnya
-      // langsung terasa responsif begitu zoom berhenti berubah.
-      map.on('zoomend', updateHeatmapDisplay);
     }
 
     async function loadData() {
@@ -1747,8 +1704,6 @@
         lastSummaryStores = [];
         lastSummaryLabel = null;
         if (markerLayer) markerLayer.clearLayers();
-        rebuildHeatmapLayer();
-        updateHeatmapDisplay();
         document.getElementById('results').innerHTML = '';
         document.getElementById('resultCount').textContent = '';
         document.getElementById('resultHeaderRow').style.display = 'none';
@@ -1768,8 +1723,6 @@
         lastSummaryStores = [];
         lastSummaryLabel = null;
         if (markerLayer) markerLayer.clearLayers();
-        rebuildHeatmapLayer();
-        updateHeatmapDisplay();
         document.getElementById('resultCount').textContent = '';
         document.getElementById('resultHeaderRow').style.display = 'none';
         updateCitySummary([], null);
@@ -2055,58 +2008,6 @@
       }
     }
 
-    // Membangun ulang titik-titik heatmap dari currentStores — yaitu toko
-    // yang SEDANG aktif ditampilkan sesuai filter/pencarian saat ini (sama
-    // seperti sumber data renderVisibleMarkers()). Dipanggil setiap kali
-    // currentStores berubah (lihat renderStoreList()), jadi heatmap selalu
-    // otomatis menyesuaikan begitu hasil pencarian/chip berubah.
-    function rebuildHeatmapLayer() {
-      try {
-        if (!heatLayer) return;
-        const points = (currentStores || []).map(s => [s.lat, s.lng, 0.6]);
-        heatLayer.setLatLngs(points);
-      } catch (err) {
-        console.error('rebuildHeatmapLayer error:', err);
-      }
-    }
-
-    // Menentukan tampilan mana yang aktif di peta: heatmap ATAU dot
-    // individual — tidak pernah dua-duanya sekaligus. Transisi ini murni
-    // berdasarkan level zoom peta (map.getZoom() vs HEATMAP_ZOOM_THRESHOLD),
-    // jadi tetap sejalan dengan aturan "titik toko tidak pernah dijadikan
-    // cluster/angka": di zoom dekat, dot yang tampil tetap satu-satu persis
-    // seperti sebelum fitur ini ada.
-    function updateHeatmapDisplay() {
-      try {
-        const legend = document.getElementById('heatmapLegend');
-        if (!map || !heatLayer || !markerLayer) return;
-
-        if (!features.heatmap) {
-          if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
-          if (!map.hasLayer(markerLayer)) map.addLayer(markerLayer);
-          if (legend) legend.style.display = 'none';
-          return;
-        }
-
-        // Legenda tampil selama fitur aktif, terlepas dari zoom saat ini.
-        if (legend) legend.style.display = 'block';
-
-        const zoomDekat = map.getZoom() >= HEATMAP_ZOOM_THRESHOLD;
-        if (zoomDekat) {
-          if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
-          if (!map.hasLayer(markerLayer)) {
-            map.addLayer(markerLayer);
-            renderVisibleMarkers();
-          }
-        } else {
-          if (map.hasLayer(markerLayer)) map.removeLayer(markerLayer);
-          if (!map.hasLayer(heatLayer)) map.addLayer(heatLayer);
-        }
-      } catch (err) {
-        console.error('updateHeatmapDisplay error:', err);
-      }
-    }
-
     function renderStoreList(groups, opts) {
       try {
         const resultsDiv = document.getElementById('results');
@@ -2198,18 +2099,16 @@
         if (total > 0 || produkSuggestions.length > 0) expandListIfCollapsed();
 
         if (total > 0 && map) {
-          try { map.fitBounds(bounds.pad(0.15)); } catch (e) { console.warn('fitBounds', e); }
+          // maxZoom dibatasi supaya saat hasil pencarian cuma 1 toko (bounds-nya
+          // nyaris sebuah titik), peta tidak auto zoom sampai level jalan/gedung
+          // yang terlalu dekat — cukup sampai level lingkungan sekitar.
+          try { map.fitBounds(bounds.pad(0.15), { maxZoom: 16 }); } catch (e) { console.warn('fitBounds', e); }
         }
         // Render langsung untuk viewport saat ini (baik total>0 atau 0, supaya
         // marker lama ikut dibersihkan). fitBounds di atas juga akan memicu
         // event 'moveend'/'zoomend' yang sudah didengarkan di initMap() untuk
         // merender ulang begitu animasi peta selesai berpindah.
         renderVisibleMarkers();
-
-        // Heatmap (kalau fiturnya aktif) ikut disinkronkan ke currentStores
-        // yang baru, persis seperti renderVisibleMarkers() di atas.
-        rebuildHeatmapLayer();
-        updateHeatmapDisplay();
 
         const validForSummary = storesArr.filter(s => s.valid);
         lastSummaryStores = validForSummary;
@@ -2240,16 +2139,31 @@
         // popup yang akan dibuka manual di bawah — lihat komentar di
         // deklarasi suppressAutoViewportRender.
         suppressAutoViewportRender = true;
-        map.flyTo([store.lat, store.lng], Math.max(map.getZoom(), 15));
+        // Pindah + zoom peta ke lokasi toko dengan level zoom TETAP (tidak
+        // tergantung zoom saat ini) — supaya toko selalu kelihatan jelas
+        // walau sebelumnya peta masih zoom out (tampilan semua toko), tapi
+        // levelnya dijaga cukup renggang (bukan level jalan/gedung).
+        const FOCUS_ZOOM = 12;
+        // Listener dipasang SEBELUM peta dipindah — setView tanpa animasi
+        // memicu 'moveend' secara instan/sinkron, jadi kalau listener baru
+        // dipasang sesudahnya, eventnya bisa terlewat sama sekali.
         map.once('moveend', () => {
           try {
-            // Setelah flyTo selesai, area tujuan otomatis masuk viewport —
-            // render ulang supaya marker toko ini pasti sudah ada sebelum
-            // popup-nya dibuka.
+            // Setelah peta selesai berpindah, area tujuan otomatis masuk
+            // viewport — render ulang supaya marker toko ini pasti sudah
+            // ada sebelum popup-nya dibuka.
             renderVisibleMarkers();
             if (store.marker) store.marker.openPopup();
           } catch (e) { console.error('focusMarker moveend', e); }
         });
+        if (map.getZoom() === FOCUS_ZOOM) {
+          // Zoom sudah pas → geser murni tanpa animasi zoom sama sekali,
+          // supaya titik toko (dirender di <canvas>, lihat initMap) tidak
+          // ikut ter-skala/berubah ukuran selama transisi.
+          map.panTo([store.lat, store.lng]);
+        } else {
+          map.setView([store.lat, store.lng], FOCUS_ZOOM, { animate: true });
+        }
       } catch (err) {
         console.error('focusMarker error:', err);
       }
@@ -2326,6 +2240,14 @@
         resultsCard.style.pointerEvents = state === 'hidden' ? 'none' : 'auto';
         // Sinkronkan visibilitas chip Produk/Toko dengan status sheet
         if (typeof updateModeChipsVisibility === 'function') updateModeChipsVisibility();
+
+        // Popover Analisis: tutup jika sheet hilang; re-posisi jika masih terbuka
+        // (tombol Analisis ikut bergerak saat sheet di-snap)
+        if (state === 'hidden') {
+          closeFeaturePanel();
+        } else if (featurePanelOpen) {
+          requestAnimationFrame(positionFeaturePanel);
+        }
       } catch (err) {
         console.error('setSheetState error:', err);
       }
@@ -2355,6 +2277,9 @@
       // Izinkan drag dari SEMUA bagian sheet-header (handle, toolbar kosong, hint)
       // asalkan bukan kontrol di atas. Lebih andal & UX lebih baik.
       if (!t.closest('.sheet-header')) return;
+
+      // Tutup popover saat user mulai drag sheet (tombol ikut bergerak)
+      closeFeaturePanel();
 
       dragging = true;
       dragMoved = false;
@@ -2566,22 +2491,14 @@
 
         // Reset SEMUA fitur Analisis
         features.citySummary = false;
-        features.heatmap = false;
         try { localStorage.setItem('nsiFeatures', JSON.stringify(features)); } catch (e) {}
         const toggleCity = document.getElementById('toggleCitySummary');
-        const toggleHeat = document.getElementById('toggleHeatmap');
         if (toggleCity) toggleCity.checked = false;
-        if (toggleHeat) toggleHeat.checked = false;
         updateFeatureBadge();
 
-        // Sembunyikan kartu ringkasan & lepas heatmap
+        // Sembunyikan kartu ringkasan
         const cityCard = document.getElementById('citySummaryCard');
         if (cityCard) cityCard.style.display = 'none';
-        try {
-          if (heatLayer && map && map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
-        } catch (e) {}
-        const legend = document.getElementById('heatmapLegend');
-        if (legend) legend.style.display = 'none';
         try {
           if (markerLayer && map) {
             markerLayer.clearLayers();
@@ -2635,7 +2552,6 @@
         setSheetState('hidden');
         updateModeChipsVisibility();
         updateFeatureButtonState();
-        updateHeatmapDisplay();
       } catch (err) {
         console.error('kembaliKeHalamanUtama error:', err);
         // Fallback: minimal reset UI
