@@ -71,6 +71,86 @@
     .leaflet-popup-content b { font-weight: 600; }
     .leaflet-popup-tip { box-shadow: var(--shadow-sm) !important; }
 
+    /* ===== Context menu klik-kanan (area B-spline) ===== */
+    .map-ctxmenu {
+      position: absolute;
+      z-index: 1000;
+      background: var(--surface);
+      border-radius: var(--r-sm);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--line);
+      padding: 6px;
+      min-width: 200px;
+      font-family: 'DM Sans', sans-serif;
+      display: none;
+    }
+    .map-ctxmenu.visible { display: block; }
+    .map-ctxmenu-item {
+      padding: 9px 12px;
+      font-size: 13.5px;
+      color: var(--ink);
+      border-radius: var(--r-xs);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .12s var(--ease);
+      user-select: none;
+    }
+    .map-ctxmenu-item:hover { background: var(--accent-tint); color: var(--accent-dark); }
+    .map-ctxmenu-item.danger:hover { background: #fef2f2; color: #dc2626; }
+    .map-ctxmenu-sep { height: 1px; background: var(--line); margin: 5px 4px; }
+
+    /* Hint bar saat mode gambar area aktif */
+    .bspline-hint {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 900;
+      background: var(--ink);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 16px;
+      border-radius: var(--r-pill);
+      box-shadow: var(--shadow-md);
+      display: none;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .bspline-hint.visible { display: flex; }
+    .bspline-hint .bspline-hint-cancel {
+      background: rgba(255,255,255,.14);
+      border: none;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: var(--r-pill);
+      cursor: pointer;
+    }
+    .bspline-hint .bspline-hint-cancel:hover { background: rgba(255,255,255,.22); }
+
+    /* Tombol di dalam popup area B-spline */
+    .bspline-popup-btn {
+      margin-top: 8px;
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-xs);
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s var(--ease);
+    }
+    .bspline-popup-btn:hover { background: var(--accent-dark); }
+
     /* Floating panel, top-left, like Google Maps search + results */
     .panel {
       position: absolute;
@@ -919,6 +999,19 @@
   <div class="app">
     <div id="map"></div>
 
+    <!-- Context menu klik-kanan untuk fitur gambar area (B-spline) -->
+    <div id="mapCtxMenu" class="map-ctxmenu">
+      <div id="ctxStartDraw" class="map-ctxmenu-item">✏️ Mulai gambar area</div>
+      <div id="ctxFinishDraw" class="map-ctxmenu-item" style="display:none;">✅ Selesai (tutup area)</div>
+      <div id="ctxCancelDraw" class="map-ctxmenu-item danger" style="display:none;">✕ Batal gambar</div>
+    </div>
+
+    <!-- Hint bar saat mode gambar area aktif -->
+    <div id="bsplineHint" class="bspline-hint">
+      <span id="bsplineHintText">Klik peta untuk menambah titik. Klik titik awal lagi untuk menutup area.</span>
+      <button type="button" class="bspline-hint-cancel" id="bsplineHintCancel">Batal</button>
+    </div>
+
     <div class="panel">
       <div class="search-card">
         <div id="inputWrap">
@@ -1002,6 +1095,7 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <script>
     let map, markerLayer;
     // Dipakai supaya render viewport-culling otomatis (debounced, lihat
@@ -1601,6 +1695,281 @@
           renderVisibleMarkers();
         }, 120);
       });
+
+      initBsplineAreaTool();
+    }
+
+    // =====================================================================
+    // FITUR: Gambar area bebas (B-spline) via klik kanan
+    // -----------------------------------------------------------------
+    // - Klik kanan di peta -> muncul context menu custom ("Mulai gambar
+    //   area"). Browser context menu bawaan otomatis ditekan oleh Leaflet
+    //   saat klik kanan di atas peta.
+    // - Selama mode gambar aktif, tiap klik kiri di peta menambah 1 titik
+    //   kontrol. Titik-titik ini dihubungkan sementara dengan garis putus
+    //   lurus (guide) supaya user tahu urutan titiknya.
+    // - Klik pada titik AWAL lagi (radius toleransi dalam piksel layar),
+    //   atau pilih "Selesai" di context menu / hint bar, akan menutup area:
+    //   titik-titik kontrol dipakai untuk membangun kurva B-spline kubik
+    //   seragam yang closed-loop (tepi area jadi melengkung halus, bukan
+    //   garis lurus antar titik seperti polygon biasa).
+    // - Area yang sudah jadi dikasih popup dengan 1 tombol: buka centroid
+    //   area itu di Google Maps (tab baru). Tidak ada penyimpanan
+    //   (localStorage) untuk area ini secara sengaja -- hanya sementara
+    //   per sesi, dan membuat area baru otomatis membersihkan area lama.
+    // =====================================================================
+    let bsplineMode = false;              // true = sedang dalam mode klik-tambah-titik
+    let bsplinePoints = [];               // array {lat,lng} titik kontrol yang sudah diklik
+    let bsplineDraftLayer = null;         // layer group: marker titik + garis guide putus-putus
+    let bsplineAreaLayer = null;          // layer polygon hasil akhir (area B-spline jadi)
+    const BSPLINE_CLOSE_TOLERANCE_PX = 16; // toleransi klik dekat titik awal (piksel layar) untuk auto-tutup
+    const BSPLINE_MIN_POINTS = 3;          // minimal titik supaya bisa jadi area
+
+    function initBsplineAreaTool() {
+      const ctxMenu = document.getElementById('mapCtxMenu');
+      const ctxStart = document.getElementById('ctxStartDraw');
+      const ctxFinish = document.getElementById('ctxFinishDraw');
+      const ctxCancel = document.getElementById('ctxCancelDraw');
+      const hintBar = document.getElementById('bsplineHint');
+      const hintCancelBtn = document.getElementById('bsplineHintCancel');
+
+      function hideCtxMenu() { ctxMenu.classList.remove('visible'); }
+
+      function showCtxMenu(containerPoint) {
+        // containerPoint: posisi klik relatif ke elemen #map (bukan
+        // koordinat layar penuh), supaya menu muncul persis di titik klik.
+        ctxMenu.style.left = containerPoint.x + 'px';
+        ctxMenu.style.top = containerPoint.y + 'px';
+        ctxStart.style.display = bsplineMode ? 'none' : 'flex';
+        ctxFinish.style.display = (bsplineMode && bsplinePoints.length >= BSPLINE_MIN_POINTS) ? 'flex' : 'none';
+        ctxCancel.style.display = bsplineMode ? 'flex' : 'none';
+        ctxMenu.classList.add('visible');
+      }
+
+      map.on('contextmenu', (e) => {
+        showCtxMenu(e.containerPoint);
+      });
+      map.on('movestart zoomstart', hideCtxMenu);
+      document.addEventListener('click', (e) => {
+        if (!ctxMenu.contains(e.target)) hideCtxMenu();
+      });
+
+      ctxStart.addEventListener('click', () => { hideCtxMenu(); startBsplineDrawing(); });
+      ctxFinish.addEventListener('click', () => { hideCtxMenu(); finishBsplineArea(); });
+      ctxCancel.addEventListener('click', () => { hideCtxMenu(); cancelBsplineDrawing(); });
+      hintCancelBtn.addEventListener('click', cancelBsplineDrawing);
+
+      map.on('click', (e) => {
+        if (!bsplineMode) return;
+        handleBsplineMapClick(e);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && bsplineMode) cancelBsplineDrawing();
+      });
+    }
+
+    function startBsplineDrawing() {
+      // Mulai sesi gambar baru selalu membersihkan area lama, karena
+      // fitur ini sengaja dibuat "1 area aktif" tanpa penyimpanan.
+      if (bsplineAreaLayer) { map.removeLayer(bsplineAreaLayer); bsplineAreaLayer = null; }
+      cancelBsplineDrawing(); // reset draft kalau ada sisa sesi sebelumnya
+
+      bsplineMode = true;
+      bsplinePoints = [];
+      bsplineDraftLayer = L.layerGroup().addTo(map);
+      document.getElementById('bsplineHint').classList.add('visible');
+      updateBsplineHintText();
+    }
+
+    function cancelBsplineDrawing() {
+      bsplineMode = false;
+      bsplinePoints = [];
+      if (bsplineDraftLayer) { map.removeLayer(bsplineDraftLayer); bsplineDraftLayer = null; }
+      document.getElementById('bsplineHint').classList.remove('visible');
+    }
+
+    function updateBsplineHintText() {
+      const el = document.getElementById('bsplineHintText');
+      if (!el) return;
+      if (bsplinePoints.length < BSPLINE_MIN_POINTS) {
+        el.textContent = `Klik peta untuk menambah titik (${bsplinePoints.length} titik, minimal ${BSPLINE_MIN_POINTS}).`;
+      } else {
+        el.textContent = `Klik titik awal lagi untuk menutup area, atau klik terus menambah titik (${bsplinePoints.length} titik).`;
+      }
+    }
+
+    function handleBsplineMapClick(e) {
+      // Kalau sudah ada >= 3 titik dan klik ini dekat dengan titik AWAL
+      // (dalam toleransi piksel layar, bukan jarak geografis, supaya
+      // konsisten di semua level zoom), tutup area di sini.
+      if (bsplinePoints.length >= BSPLINE_MIN_POINTS) {
+        const startPoint = map.latLngToContainerPoint(L.latLng(bsplinePoints[0].lat, bsplinePoints[0].lng));
+        const clickPoint = e.containerPoint;
+        const dx = startPoint.x - clickPoint.x;
+        const dy = startPoint.y - clickPoint.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= BSPLINE_CLOSE_TOLERANCE_PX) {
+          finishBsplineArea();
+          return;
+        }
+      }
+
+      bsplinePoints.push({ lat: e.latlng.lat, lng: e.latlng.lng });
+      redrawBsplineDraft();
+      updateBsplineHintText();
+    }
+
+    function redrawBsplineDraft() {
+      bsplineDraftLayer.clearLayers();
+
+      // Titik kontrol: titik pertama dibedakan warnanya sebagai penanda
+      // "klik di sini lagi untuk menutup area".
+      bsplinePoints.forEach((p, idx) => {
+        L.circleMarker([p.lat, p.lng], {
+          radius: idx === 0 ? 7 : 5,
+          color: '#fff',
+          weight: 2,
+          fillColor: idx === 0 ? '#dc2626' : '#4f46e5',
+          fillOpacity: 1
+        }).addTo(bsplineDraftLayer);
+      });
+
+      // Garis guide putus-putus lurus antar titik, murni bantuan visual
+      // urutan klik -- bentuk melengkung finalnya baru muncul saat area
+      // ditutup (lihat finishBsplineArea).
+      if (bsplinePoints.length >= 2) {
+        L.polyline(bsplinePoints.map(p => [p.lat, p.lng]), {
+          color: '#4f46e5',
+          weight: 2,
+          dashArray: '6,6',
+          opacity: 0.8
+        }).addTo(bsplineDraftLayer);
+      }
+    }
+
+    // Titik pada kurva B-spline kubik seragam untuk 4 titik kontrol
+    // p0..p3, pada parameter t (0..1), memakai basis fungsi B-spline
+    // standar (bukan Catmull-Rom) -- kurva ini TIDAK melewati titik
+    // kontrolnya persis, tapi selalu mulus (C2 continuous) dan tetap
+    // "ditarik" ke arah tiap titik, cocok untuk penanda area bebas.
+    function bsplineSegmentPoint(p0, p1, p2, p3, t) {
+      const t2 = t * t, t3 = t2 * t;
+      const b0 = (-t3 + 3 * t2 - 3 * t + 1) / 6;
+      const b1 = (3 * t3 - 6 * t2 + 4) / 6;
+      const b2 = (-3 * t3 + 3 * t2 + 3 * t + 1) / 6;
+      const b3 = t3 / 6;
+      return {
+        lat: p0.lat * b0 + p1.lat * b1 + p2.lat * b2 + p3.lat * b3,
+        lng: p0.lng * b0 + p1.lng * b1 + p2.lng * b2 + p3.lng * b3
+      };
+    }
+
+    // Bangun kurva B-spline closed-loop dari array titik kontrol -- titik
+    // kontrol dianggap melingkar (indeks terakhir tersambung ke indeks 0)
+    // supaya kurva menutup balik ke area sekitar titik awal (poin A).
+    function computeClosedBspline(points, segmentsPerSpan = 16) {
+      const n = points.length;
+      if (n < 3) return points.slice();
+      const curve = [];
+      for (let i = 0; i < n; i++) {
+        const p0 = points[(i - 1 + n) % n];
+        const p1 = points[i % n];
+        const p2 = points[(i + 1) % n];
+        const p3 = points[(i + 2) % n];
+        for (let s = 0; s < segmentsPerSpan; s++) {
+          curve.push(bsplineSegmentPoint(p0, p1, p2, p3, s / segmentsPerSpan));
+        }
+      }
+      return curve;
+    }
+
+    // Hitung luas polygon (km²) secara geodesic (memperhitungkan lengkungan
+    // bumi sungguhan) memakai Turf.js -- turf.area() menghitung luas
+    // permukaan bumi yang sebenarnya dari sebuah polygon GeoJSON, lebih
+    // akurat dibanding pendekatan proyeksi datar untuk area yang lebih
+    // luas. Hasilnya dalam m², dikonversi ke km² di sini.
+    function computePolygonAreaKm2(points) {
+      // GeoJSON polygon butuh urutan [lng, lat] (bukan [lat, lng]) dan
+      // ring harus tertutup: titik pertama diulang di akhir array.
+      const ring = points.map(p => [p.lng, p.lat]);
+      ring.push(ring[0]);
+      const turfPolygon = turf.polygon([ring]);
+      const areaM2 = turf.area(turfPolygon);
+      return areaM2 / 1_000_000;
+    }
+
+    function finishBsplineArea() {
+      if (bsplinePoints.length < BSPLINE_MIN_POINTS) {
+        cancelBsplineDrawing();
+        return;
+      }
+
+      // Dulu di sini area digambar sebagai kurva B-spline (melengkung)
+      // lewat computeClosedBspline(). Sekarang sengaja diganti jadi garis
+      // lurus antar titik kontrol saja (fungsi B-spline-nya tetap ada di
+      // kode, cuma tidak dipakai untuk MENGGAMBAR lagi) -- polygon
+      // langsung dibentuk dari bsplinePoints apa adanya.
+      if (bsplineAreaLayer) { map.removeLayer(bsplineAreaLayer); bsplineAreaLayer = null; }
+
+      bsplineAreaLayer = L.polygon(bsplinePoints.map(p => [p.lat, p.lng]), {
+        color: '#4f46e5',
+        weight: 2.5,
+        fillColor: '#4f46e5',
+        fillOpacity: 0.18
+      }).addTo(map);
+
+      // Centroid sederhana (rata-rata titik kontrol asli, bukan titik
+      // kurva) dipakai sebagai lokasi tujuan tombol Google Maps --
+      // cukup representatif untuk area kecil/menengah hasil gambar tangan.
+      const centroid = bsplinePoints.reduce(
+        (acc, p) => ({ lat: acc.lat + p.lat / bsplinePoints.length, lng: acc.lng + p.lng / bsplinePoints.length }),
+        { lat: 0, lng: 0 }
+      );
+
+      // Format URL "search/<keyword>/@lat,lng,zoom" (bukan yang pakai
+      // ?api=1&query=) dipilih dengan sengaja: format api=1&query hanya
+      // bisa dipakai untuk 1 nilai (titik ATAU kata kunci teks, tidak
+      // dua-duanya sekaligus) sehingga tidak bisa mengarahkan sekaligus
+      // mencari kata kunci di sekitar titik tertentu. Format @lat,lng,zoom
+      // ini yang dipakai Google Maps sendiri saat searching sambil center
+      // di lokasi tertentu, jadi hasilnya benar-benar pencarian "toko
+      // bangunan" di sekitar area yang digambar, bukan cuma buka titiknya.
+      const gmapsKeyword = 'toko bangunan';
+      const gmapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(gmapsKeyword)}/@${centroid.lat},${centroid.lng},16z`;
+
+      const areaKm2 = computePolygonAreaKm2(bsplinePoints);
+
+      const popupHtml = `
+        <div style="min-width:180px;">
+          <b>Area yang digambar</b><br>
+          <span style="color:var(--ink-soft);">Luas ~${areaKm2.toFixed(2)} km²</span>
+          <button type="button" class="bspline-popup-btn" onclick="window.open('${gmapsUrl}', '_blank')">
+            🔍 Cari "toko bangunan" di sini
+          </button>
+        </div>
+      `;
+      // autoClose:false & closeOnClick:false supaya popup ini TIDAK ikut
+      // tertutup kalau user klik bagian lain di peta atau buka popup lain
+      // (mis. popup toko) -- popup area cuma tertutup lewat tombol "✕"
+      // bawaan Leaflet di pojok kanan-atasnya sendiri. Event 'popupclose'
+      // di bawah menangkap momen tombol "✕" itu diklik, lalu ikut
+      // menghapus polygon area-nya juga (bukan cuma menyembunyikan popup).
+      bsplineAreaLayer
+        .bindPopup(popupHtml, { autoClose: false, closeOnClick: false })
+        .on('popupclose', closeBsplineArea)
+        .openPopup(L.latLng(centroid.lat, centroid.lng));
+
+      cancelBsplineDrawing();
+    }
+
+    // Dipanggil dari tombol "✕" di popup area -- menghapus polygon area
+    // yang sedang tergambar dari peta (menutup popup-nya sekaligus,
+    // karena popup itu menempel ke layer polygon ini).
+    function closeBsplineArea() {
+      if (bsplineAreaLayer) {
+        map.removeLayer(bsplineAreaLayer);
+        bsplineAreaLayer = null;
+      }
     }
 
     async function loadData() {
