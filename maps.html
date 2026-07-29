@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f6f6f8">
   <title>NSI Maps</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%2318181b'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
@@ -51,6 +52,44 @@
 
     .app { position: relative; height: 100vh; width: 100vw; background: var(--canvas); }
     #map { position: absolute; inset: 0; z-index: 0; background: #eef0f2; }
+
+    /* Logo/watermark brand — rata tengah di bawah peta */
+    .app-brand {
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%);
+      z-index: 5;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(255,255,255,.7);
+    }
+    .app-brand .brand-bold {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .app-brand .brand-normal {
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .app-brand .brand-by {
+      font-size: 10px;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--ink-faint);
+      margin-left: 4px;
+    }
+    @media (max-width: 768px) {
+      .app-brand { bottom: 6px; }
+      .app-brand .brand-bold, .app-brand .brand-normal { font-size: 12px; }
+      .app-brand .brand-by { font-size: 9px; }
+    }
     #map .leaflet-control-attribution { font-family: 'DM Sans', sans-serif; font-size: 10px; }
     .leaflet-touch .leaflet-bar,
     .leaflet-touch .leaflet-control-layers {
@@ -998,6 +1037,11 @@
 <body>
   <div class="app">
     <div id="map"></div>
+
+    <!-- Logo/watermark brand — rata tengah di bawah peta -->
+    <div class="app-brand">
+      <span class="brand-bold">NSI</span><span class="brand-normal"> Maps</span><span class="brand-by">by RonnyBDG</span>
+    </div>
 
     <!-- Context menu klik-kanan untuk fitur gambar area (B-spline) -->
     <div id="mapCtxMenu" class="map-ctxmenu">
