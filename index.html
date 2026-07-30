@@ -7,112 +7,188 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
 
-	<link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="favicon.png">
 
     <style>
+        :root{
+            --ink:#15140F;
+            --paper:#FAF9F6;
+            --card:#FFFFFF;
+            --line:#E7E4DC;
+            --muted:#8B887E;
+
+            --c-form:#3B6FE0;
+            --c-order:#E0A63B;
+            --c-maps:#2F9E6E;
+            --c-swatch1:#E0553B;
+            --c-swatch2:#3BA3E0;
+            --c-swatch3:#E0C13B;
+            --c-swatch4:#7A3BE0;
+        }
+
+        *{ box-sizing:border-box; }
+
         body{
             margin:0;
             font-family:'DM Sans', sans-serif;
-            background:#fff;
-            color:#000000;
+            background:var(--paper);
+            color:var(--ink);
+            -webkit-font-smoothing:antialiased;
         }
 
         /* HEADER */
         .header{
-            background:#000;
-            color:#fff;
-            padding:40px 30px; 
+            padding:56px 32px 40px;
+            max-width:640px;
+            margin:0 auto;
         }
 
         .header h1{
             margin:0;
-            font-size:2.1em; 
-            font-weight:700;
+            font-size:2.6em;
+            font-weight:800;
+            letter-spacing:-0.02em;
+            line-height:1.05;
         }
 
         /* SECTIONS */
         .list-section {
-            padding: 0 30px;
+            max-width:640px;
+            margin:0 auto;
+            padding: 8px 32px 64px;
             list-style: none;
         }
-        
+
         .list-item {
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 16px 0; 
-            border-bottom: 1px solid #e0e0e0; 
-        }
-        
-        .list-item:first-child {
-            border-top: 1px solid #e0e0e0; 
-        }
-        
-        .title, .desc {
-            display: none; 
-        }
-        
-        .list-item-content {
-            flex-grow: 1; 
-            padding-right: 15px; 
-        }
-        
-        .list-item a.link {
-            color: #000000;
-            text-decoration: none;
-            font-size: 1.2em; 
-            font-weight: 500;
-            display: block;
-        }
-        
-        .arrow-btn {
-            background: #e0e0e0; 
-            border-radius: 50%; 
-            width: 40px; 
-            min-width: 40px; 
-            height: 40px;
-            min-height: 40px; 
-            
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            margin-left: 15px;
-            
-            font-size: 1.2em;
-            color: #000000;
+            border-bottom: 1px solid var(--line);
         }
 
-        .arrow-btn:hover {
-            background: #cccccc; 
+        .list-item:first-child {
+            border-top: 1px solid var(--line);
         }
-        
-        .btn {
-            display: none !important;
+
+        .link {
+            display:flex;
+            align-items:center;
+            gap:18px;
+            padding:20px 4px;
+            text-decoration:none;
+            color:inherit;
+            border-radius:10px;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        .link:hover, .link:focus-visible{
+            background:var(--card);
+            transform: translateX(2px);
+        }
+
+        .link:focus-visible{
+            outline:2px solid var(--ink);
+            outline-offset:2px;
+        }
+
+        .swatch{
+            width:14px;
+            height:14px;
+            min-width:14px;
+            border-radius:4px;
+        }
+
+        .icon-wrap{
+            width:44px;
+            height:44px;
+            min-width:44px;
+            border-radius:12px;
+            background:var(--card);
+            border:1px solid var(--line);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .icon-wrap svg{
+            width:20px;
+            height:20px;
+        }
+
+        .list-item-content {
+            flex-grow: 1;
+        }
+
+        .title{
+            font-size:1.12em;
+            font-weight:600;
+            letter-spacing:-0.005em;
+            display:block;
+        }
+
+        .arrow{
+            width:34px;
+            height:34px;
+            min-width:34px;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--ink);
+            transition: background 0.15s ease;
+        }
+
+        .link:hover .arrow{
+            background:var(--ink);
+            color:var(--paper);
+        }
+
+        .arrow svg{
+            width:15px;
+            height:15px;
+        }
+
+        .card-swatches{
+            display:grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap:3px;
+        }
+        .card-swatches .swatch{
+            width:11px;
+            height:11px;
+            min-width:11px;
+            border-radius:3px;
+        }
+
+        footer{
+            max-width:640px;
+            margin:0 auto;
+            padding:24px 32px 40px;
+            font-size:0.82em;
+            color:var(--muted);
+            font-weight:500;
+            text-align:center;
         }
 
         @media(max-width:500px){
             .header {
-                padding: 30px 20px; 
+                padding: 40px 20px 28px;
             }
             .header h1{
-                font-size:1.9em;
+                font-size:2.1em;
             }
             .list-section {
-                padding: 0 20px;
+                padding: 4px 20px 48px;
             }
-            .list-item a.link{
-                font-size:1.1em;
+            .title{
+                font-size:1.04em;
             }
-            
-            .arrow-btn {
-                width: 40px;
-                min-width: 40px;
-                height: 40px;
-                min-height: 40px;
+            footer{
+                padding:20px 20px 32px;
             }
+        }
+
+        @media (prefers-reduced-motion: reduce){
+            .link, .arrow{ transition:none; }
         }
     </style>
 </head>
@@ -121,48 +197,73 @@
     <div class="header">
         <h1>Supervisor</h1>
     </div>
-    
-<ul class="list-section">
-        
+
+    <ul class="list-section">
+
         <li class="list-item">
-            <div class="list-item-content">
-                <a class="link" href="openblock.html">
-                    Form Open Block
-                </a>
-            </div>
-            <a href="openblock.html" class="arrow-btn">&#x2794;</a>
+            <a class="link" href="openblock.html">
+                <span class="icon-wrap" style="color:var(--c-form)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l3 3v15H6V3z"/><path d="M9 12h6M9 16h6M9 8h2"/></svg>
+                </span>
+                <div class="list-item-content">
+                    <span class="title">Form Open Block</span>
+                </div>
+                <span class="arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </a>
         </li>
 
         <li class="list-item">
-            <div class="list-item-content">
-                <a class="link" href="https://halsomnia.github.io/nsibandung/so.html">
-                    Sales Order
-                </a>
-            </div>
-            <a href="https://halsomnia.github.io/nsibandung/so.html" class="arrow-btn">&#x2794;</a>
+            <a class="link" href="https://halsomnia.github.io/nsibandung/so.html">
+                <span class="icon-wrap" style="color:var(--c-order)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h2l1.6 10.6a2 2 0 0 0 2 1.7h7.2a2 2 0 0 0 2-1.7L20 8H7"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+                </span>
+                <div class="list-item-content">
+                    <span class="title">Sales Order</span>
+                </div>
+                <span class="arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </a>
         </li>
 
         <li class="list-item">
-            <div class="list-item-content">
-                <a class="link" href="https://halsomnia.github.io/spv/maps">
-                    NSI Maps 
-                </a>
-            </div>
-            <a href="https://halsomnia.github.io/spv/maps" class="arrow-btn">&#x2794;</a>
-        </li>	
-		
+            <a class="link" href="https://halsomnia.github.io/spv/maps">
+                <span class="icon-wrap" style="color:var(--c-maps)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.4A7 7 0 0 1 19 9.6C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.4"/></svg>
+                </span>
+                <div class="list-item-content">
+                    <span class="title">NSI Maps</span>
+                </div>
+                <span class="arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </a>
+        </li>
+
         <li class="list-item">
-            <div class="list-item-content">
-                <a class="link" href="https://drive.google.com/drive/folders/1frRkDfIgu9LLxQvmyr_zmoSeZi-xP78b?usp=sharing">
-                    Brosur dan kartu warna
-                </a>
-            </div>
-            <a href="https://drive.google.com/drive/folders/1frRkDfIgu9LLxQvmyr_zmoSeZi-xP78b?usp=sharing" class="arrow-btn">&#x2794;</a>
-        </li>		
+            <a class="link" href="https://drive.google.com/drive/folders/1frRkDfIgu9LLxQvmyr_zmoSeZi-xP78b?usp=sharing">
+                <span class="icon-wrap">
+                    <span class="card-swatches" aria-hidden="true">
+                        <span class="swatch" style="background:var(--c-swatch1)"></span>
+                        <span class="swatch" style="background:var(--c-swatch2)"></span>
+                        <span class="swatch" style="background:var(--c-swatch3)"></span>
+                        <span class="swatch" style="background:var(--c-swatch4)"></span>
+                    </span>
+                </span>
+                <div class="list-item-content">
+                    <span class="title">Brosur dan kartu warna</span>
+                </div>
+                <span class="arrow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </a>
+        </li>
 
     </ul>
 
+    <footer>NSI Bandung &middot; Portal Supervisor</footer>
+
 </body>
 </html>
-
-
