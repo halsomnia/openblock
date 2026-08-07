@@ -1260,6 +1260,29 @@
     .route-toko-nama { font-size: 13.5px; font-weight: 600; line-height: 1.3; }
     .route-toko-alamat { font-size: 12px; color: var(--ink-soft); margin-top: 2px; line-height: 1.4; }
     .route-empty { padding: 16px 12px; text-align: center; color: var(--ink-faint); font-size: 13px; }
+    .route-toko-manual-hint {
+      font-size: 11.5px;
+      color: var(--ink-faint);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    .route-toko-manual-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .route-toko-manual-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: var(--r-xs);
+      background: var(--accent-tint);
+    }
+    .route-toko-manual-item .route-toko-nama { color: var(--accent-dark); }
+    .route-toko-manual-item .route-toko-alamat { color: var(--accent-dark); opacity: .8; }
+    .route-toko-manual-item-text { flex: 1; min-width: 0; }
+    .route-toko-manual-item-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--accent-dark); font-size: 12px; font-weight: 600;
+      flex-shrink: 0;
+    }
     .route-selected-count { font-size: 12.5px; color: var(--ink-soft); margin-top: 8px; }
     .route-selected-count b { color: var(--ink); }
     .route-primary-btn {
@@ -1311,6 +1334,29 @@
     .route-result-nama { font-size: 13.5px; font-weight: 600; }
     .route-result-alamat { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
     .route-result-km { font-size: 12px; color: var(--accent-dark); font-weight: 600; margin-top: 4px; }
+    .route-result-store-list { display: flex; flex-direction: column; gap: 10px; }
+    .route-result-draggable { cursor: grab; }
+    .route-result-draggable.dragging { opacity: .45; cursor: grabbing; box-shadow: var(--shadow-md); }
+    .route-result-drag-handle {
+      flex-shrink: 0;
+      color: var(--ink-faint);
+      font-size: 17px;
+      line-height: 1;
+      padding-top: 2px;
+      user-select: none;
+      cursor: grab;
+      touch-action: none;
+    }
+    .route-drag-hint {
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      background: var(--canvas);
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--r-xs);
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
     .route-note {
       font-size: 11.5px;
       color: var(--ink-faint);
@@ -1351,6 +1397,12 @@
     <div id="routeFinishPickHint" class="bspline-hint">
       <span id="routeFinishPickHintText">Klik di peta untuk menentukan titik finish rute</span>
       <button type="button" class="bspline-hint-cancel" id="routeFinishPickCancelBtn">Batal</button>
+    </div>
+
+    <!-- Hint bar saat mode "klik peta untuk toko tujuan (manual)" aktif -->
+    <div id="routeTokoPickHint" class="bspline-hint">
+      <span id="routeTokoPickHintText">Klik di peta untuk menambahkan toko tujuan</span>
+      <button type="button" class="bspline-hint-cancel" id="routeTokoPickCancelBtn">Batal</button>
     </div>
 
     <div class="panel">
@@ -1469,8 +1521,32 @@
 
             <div class="route-section">
               <div class="route-section-label">2. Pilih Toko Tujuan</div>
-              <input type="text" id="routeTokoSearch" class="route-toko-search" placeholder="Cari nama/alamat toko..." autocomplete="off">
-              <div id="routeTokoList" class="route-toko-list"></div>
+              <div class="route-start-tabs">
+                <button type="button" class="route-tab-btn active" id="routeTokoTabList" onclick="switchRouteTokoTab('list')">📋 Daftar Toko</button>
+                <button type="button" class="route-tab-btn" id="routeTokoTabAddress" onclick="switchRouteTokoTab('address')">🔍 Cari Alamat</button>
+                <button type="button" class="route-tab-btn" id="routeTokoTabMap" onclick="switchRouteTokoTab('map')">📍 Klik Peta</button>
+              </div>
+
+              <div id="routeTokoListPane">
+                <input type="text" id="routeTokoSearch" class="route-toko-search" placeholder="Cari nama/alamat toko..." autocomplete="off">
+                <div id="routeTokoList" class="route-toko-list"></div>
+              </div>
+
+              <div id="routeTokoAddressPane" style="display:none;">
+                <div class="route-address-wrap">
+                  <input type="text" id="routeTokoAddressInput" class="route-address-input" placeholder="Ketik alamat toko tujuan (kalau tidak ada di daftar)..." autocomplete="off">
+                  <div id="routeTokoAddressSuggestions" class="route-address-suggestions"></div>
+                </div>
+                <div class="route-toko-manual-hint">Pilih hasil pencarian untuk menambahkannya ke daftar tujuan.</div>
+              </div>
+
+              <div id="routeTokoMapPane" style="display:none;">
+                <button type="button" class="route-pick-map-btn" id="routeTokoPickMapBtn" onclick="startPickRouteTokoOnMap()">📍 Klik lokasi di peta</button>
+                <div class="route-toko-manual-hint">Setiap klik di peta akan menambahkan satu toko tujuan baru.</div>
+              </div>
+
+              <div id="routeTokoManualList" class="route-toko-manual-list"></div>
+
               <div class="route-selected-count"><b id="routeSelectedCountNum">0</b> toko dipilih (maks <span id="routeMaxStores"></span>)</div>
             </div>
 
@@ -1479,7 +1555,7 @@
               <div class="route-start-tabs">
                 <button type="button" class="route-tab-btn active" id="routeFinishTabAddress" onclick="switchRouteFinishTab('address')">🔍 Cari Alamat</button>
                 <button type="button" class="route-tab-btn" id="routeFinishTabMap" onclick="switchRouteFinishTab('map')">📍 Klik Peta</button>
-                <button type="button" class="route-tab-btn" id="routeFinishTabSame" onclick="switchRouteFinishTab('same')">🔁 Sama Start</button>
+                <button type="button" class="route-tab-btn" id="routeFinishTabSame" onclick="switchRouteFinishTab('same')">🔁 Sama dengan Start</button>
               </div>
 
               <div id="routeFinishAddressPane">
@@ -1511,6 +1587,7 @@
         <!-- Layar 2: Hasil urutan rute -->
         <div id="routeResultView" style="display:none;">
           <div class="route-modal-body">
+            <div class="route-drag-hint">💡 Geser (drag) toko di bawah pakai ikon ⠿ untuk mengubah urutan kunjungan. Nomor pada badge tetap menunjukkan saran urutan dari sistem.</div>
             <div id="routeResultList" class="route-result-list"></div>
             <div class="route-note">Jarak di atas estimasi garis lurus (bukan jarak jalan), dipakai hanya untuk menentukan urutan toko terdekat. Lihat estimasi jarak &amp; waktu tempuh akurat langsung di Google Maps saat rute dibuka.</div>
           </div>
@@ -2201,6 +2278,7 @@
         if (bsplineMode) { handleBsplineMapClick(e); return; }
         if (routePickMode) { handleRouteMapClick(e); return; }
         if (routeFinishPickMode) { handleRouteFinishMapClick(e); return; }
+        if (routeTokoPickMode) { handleRouteTokoMapClick(e); return; }
       });
 
       document.addEventListener('keydown', (e) => {
@@ -2211,6 +2289,10 @@
         }
         if (e.key === 'Escape' && routeFinishPickMode) {
           cancelPickRouteFinishOnMap();
+          document.getElementById('routeModal').style.display = 'flex';
+        }
+        if (e.key === 'Escape' && routeTokoPickMode) {
+          cancelPickRouteTokoOnMap();
           document.getElementById('routeModal').style.display = 'flex';
         }
       });
@@ -3421,6 +3503,17 @@
     let routeFinishPickMode = false;
     let routeFinishGeocodeTimer = null;
     let routeFinishAddressResults = [];
+    // Toko tujuan manual (dari cari alamat / klik peta) — dipakai kalau
+    // toko yang dicari tidak ada di database. Disimpan terpisah dari
+    // routeStoreIndex (yang selalu dibangun dari allData), tapi key-nya
+    // ikut dimasukkan ke routeSelectedKeys yang sama supaya hitungan &
+    // proses hitung rute tetap satu alur dengan toko dari daftar.
+    let routeManualStores = new Map(); // key -> {key, nama, alamat, lat, lng, manual:true}
+    let routeManualMarkers = new Map(); // key -> L.circleMarker
+    let routeManualCounter = 0;
+    let routeTokoPickMode = false;
+    let routeTokoGeocodeTimer = null;
+    let routeTokoAddressResults = [];
 
     function buildRouteStoreIndex() {
       if (routeStoreIndex) return routeStoreIndex;
@@ -3450,6 +3543,7 @@
         document.getElementById('routeSetupView').style.display = '';
         document.getElementById('routeResultView').style.display = 'none';
         renderRouteTokoList('');
+        renderRouteTokoManualList();
         updateRouteSelectedCount();
         updateRouteStartUI();
         updateRouteFinishUI();
@@ -3475,8 +3569,13 @@
       document.getElementById('routeFinishAddressInput').value = '';
       document.getElementById('routeFinishAddressSuggestions').classList.remove('visible');
       document.getElementById('routeFinishAddressSuggestions').innerHTML = '';
+      switchRouteTokoTab('list');
       document.getElementById('routeTokoSearch').value = '';
+      document.getElementById('routeTokoAddressInput').value = '';
+      document.getElementById('routeTokoAddressSuggestions').classList.remove('visible');
+      document.getElementById('routeTokoAddressSuggestions').innerHTML = '';
       renderRouteTokoList('');
+      renderRouteTokoManualList();
       updateRouteSelectedCount();
       updateRouteFinishUI();
       updateRouteHitungBtnState();
@@ -3753,17 +3852,162 @@
       document.getElementById('routeSelectedCountNum').textContent = routeSelectedKeys.size;
     }
 
+    // =====================================================================
+    // Toko tujuan manual (cari alamat / klik peta) — dipakai kalau toko
+    // yang dituju belum ada di database. Meniru pola titik start/finish:
+    // Nominatim untuk cari alamat, klik peta untuk pilih langsung.
+    // Bedanya, di sini bisa nambah banyak toko sekaligus (bukan 1 titik),
+    // jadi setiap alamat/klik yang dipilih langsung masuk ke daftar
+    // tujuan (routeManualStores + routeSelectedKeys), bukan menggantikan
+    // yang sebelumnya.
+    // =====================================================================
+    function switchRouteTokoTab(tab) {
+      const tabList = document.getElementById('routeTokoTabList');
+      const tabAddress = document.getElementById('routeTokoTabAddress');
+      const tabMap = document.getElementById('routeTokoTabMap');
+      const paneList = document.getElementById('routeTokoListPane');
+      const paneAddress = document.getElementById('routeTokoAddressPane');
+      const paneMap = document.getElementById('routeTokoMapPane');
+
+      tabList.classList.remove('active');
+      tabAddress.classList.remove('active');
+      tabMap.classList.remove('active');
+      paneList.style.display = 'none';
+      paneAddress.style.display = 'none';
+      paneMap.style.display = 'none';
+
+      if (tab === 'address') {
+        tabAddress.classList.add('active');
+        paneAddress.style.display = '';
+        cancelPickRouteTokoOnMap();
+      } else if (tab === 'map') {
+        tabMap.classList.add('active');
+        paneMap.style.display = '';
+      } else {
+        tabList.classList.add('active');
+        paneList.style.display = '';
+        cancelPickRouteTokoOnMap();
+      }
+    }
+
+    // ---- Cari alamat toko tujuan (Nominatim / OpenStreetMap) ----
+    function onRouteTokoAddressInput(keyword) {
+      clearTimeout(routeTokoGeocodeTimer);
+      const box = document.getElementById('routeTokoAddressSuggestions');
+      const kw = keyword.trim();
+      if (kw.length < 3) { box.classList.remove('visible'); box.innerHTML = ''; return; }
+      routeTokoGeocodeTimer = setTimeout(() => searchRouteTokoAddress(kw), 400);
+    }
+
+    async function searchRouteTokoAddress(keyword) {
+      const box = document.getElementById('routeTokoAddressSuggestions');
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=id&q=${encodeURIComponent(keyword)}`;
+        const res = await fetch(url, { headers: { 'Accept-Language': 'id' } });
+        const data = await res.json();
+        routeTokoAddressResults = Array.isArray(data) ? data : [];
+        if (!routeTokoAddressResults.length) {
+          box.innerHTML = '<div class="route-address-suggestion-item">Alamat tidak ditemukan</div>';
+          box.classList.add('visible');
+          return;
+        }
+        box.innerHTML = routeTokoAddressResults.map((r, i) =>
+          `<div class="route-address-suggestion-item" data-idx="${i}">${escapeHtml(r.display_name)}</div>`
+        ).join('');
+        box.classList.add('visible');
+      } catch (err) {
+        console.error('searchRouteTokoAddress error:', err);
+        box.innerHTML = '<div class="route-address-suggestion-item">Gagal mencari alamat, coba lagi</div>';
+        box.classList.add('visible');
+      }
+    }
+
+    // ---- Klik langsung di peta untuk toko tujuan ----
+    function startPickRouteTokoOnMap() {
+      routeTokoPickMode = true;
+      document.getElementById('routeTokoPickHint').classList.add('visible');
+      document.getElementById('routeModal').style.display = 'none';
+    }
+
+    function cancelPickRouteTokoOnMap() {
+      routeTokoPickMode = false;
+      document.getElementById('routeTokoPickHint').classList.remove('visible');
+    }
+
+    function handleRouteTokoMapClick(e) {
+      addManualRouteToko(e.latlng.lat, e.latlng.lng, 'Titik di peta', `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`);
+      document.getElementById('routeModal').style.display = 'flex';
+      // Mode tetap aktif supaya user bisa langsung klik lagi untuk
+      // menambah toko tujuan berikutnya tanpa perlu buka menu lagi.
+    }
+
+    // Tambahkan satu toko tujuan manual ke daftar (dari cari alamat atau
+    // klik peta). Menghormati batas ROUTE_MAX_STORES yang sama dengan
+    // toko dari daftar database.
+    function addManualRouteToko(lat, lng, nama, alamat) {
+      if (isNaN(lat) || isNaN(lng)) return;
+      if (routeSelectedKeys.size >= ROUTE_MAX_STORES) {
+        alert(`Maksimal ${ROUTE_MAX_STORES} toko per rute (batas waypoint Google Maps).`);
+        return;
+      }
+      routeManualCounter++;
+      const key = `manual:${routeManualCounter}:${lat.toFixed(6)},${lng.toFixed(6)}`;
+      const store = { key, nama: nama || 'Toko manual', alamat: alamat || `${lat.toFixed(5)}, ${lng.toFixed(5)}`, lat, lng, manual: true };
+      routeManualStores.set(key, store);
+      routeSelectedKeys.add(key);
+
+      const marker = L.circleMarker([lat, lng], {
+        radius: 8, color: '#4f46e5', weight: 2, fillColor: '#fff', fillOpacity: 1
+      }).addTo(map).bindTooltip(store.nama);
+      routeManualMarkers.set(key, marker);
+
+      renderRouteTokoManualList();
+      updateRouteSelectedCount();
+      updateRouteHitungBtnState();
+    }
+
+    function removeManualRouteToko(key) {
+      routeManualStores.delete(key);
+      routeSelectedKeys.delete(key);
+      const marker = routeManualMarkers.get(key);
+      if (marker) { try { map.removeLayer(marker); } catch (e) {} }
+      routeManualMarkers.delete(key);
+      renderRouteTokoManualList();
+      updateRouteSelectedCount();
+      updateRouteHitungBtnState();
+    }
+
+    function renderRouteTokoManualList() {
+      const listEl = document.getElementById('routeTokoManualList');
+      if (!routeManualStores.size) { listEl.innerHTML = ''; return; }
+      listEl.innerHTML = Array.from(routeManualStores.values()).map(s => `
+        <div class="route-toko-manual-item">
+          <div class="route-toko-manual-item-text">
+            <div class="route-toko-nama">📍 ${escapeHtml(s.nama)}</div>
+            <div class="route-toko-alamat">${escapeHtml(s.alamat)}</div>
+          </div>
+          <button type="button" class="route-toko-manual-item-remove" data-key="${escapeHtml(s.key)}">Hapus</button>
+        </div>
+      `).join('');
+    }
+
     function updateRouteHitungBtnState() {
       const btn = document.getElementById('routeHitungBtn');
       btn.disabled = !routeStart || routeSelectedKeys.size === 0;
+    }
+
+    // Cari data toko dari key, baik yang berasal dari daftar database
+    // (routeStoreIndex) maupun yang ditambahkan manual (cari alamat /
+    // klik peta) lewat routeManualStores.
+    function getRouteStoreByKey(key) {
+      return routeManualStores.get(key) || buildRouteStoreIndex().get(key);
     }
 
     // ---- Hitung urutan kunjungan (nearest-neighbor, jarak lurus) ----
     function hitungRuteEkspedisi() {
       try {
         if (!routeStart || routeSelectedKeys.size === 0) return;
-        const idx = buildRouteStoreIndex();
-        let remaining = Array.from(routeSelectedKeys).map(k => idx.get(k)).filter(Boolean);
+        let remaining = Array.from(routeSelectedKeys).map(k => getRouteStoreByKey(k)).filter(Boolean);
 
         let current = { lat: routeStart.lat, lng: routeStart.lng };
         const ordered = [];
@@ -3777,6 +4021,13 @@
           ordered.push({ store: next, km: bestD });
           current = { lat: next.lat, lng: next.lng };
         }
+
+        // Nomor badge (1, 2, 3, ...) adalah SARAN urutan awal dari sistem
+        // (hasil nearest-neighbor) dan sengaja disimpan permanen di
+        // suggestedNum. User boleh drag-reorder daftar hasil di bawah
+        // untuk mengubah urutan kunjungan aktual, tapi nomor ini tidak
+        // ikut berubah — supaya tetap terlihat mana saran asli sistem.
+        ordered.forEach((o, i) => { o.suggestedNum = i + 1; });
 
         // Titik finish (opsional) selalu ditambahkan sebagai titik
         // terakhir setelah semua toko selesai dikunjungi — bukan ikut
@@ -3809,10 +4060,16 @@
           </div>
         </div>
       `;
-      let storeNum = 0;
+      // pos = posisi item toko (tanpa Finish) dalam array `ordered` SAAT
+      // RENDER INI — dipakai untuk membaca ulang urutan baru setelah
+      // di-drag (lihat initRouteResultDrag), beda dari suggestedNum
+      // (nomor badge) yang tetap tidak berubah.
+      let storeHtml = '';
+      let finishHtml = '';
+      let pos = 0;
       ordered.forEach((o) => {
         if (o.isFinish) {
-          html += `
+          finishHtml = `
             <div class="route-result-item">
               <div class="route-result-badge finish">F</div>
               <div class="route-result-text">
@@ -3824,10 +4081,10 @@
           `;
           return;
         }
-        storeNum++;
-        html += `
-          <div class="route-result-item">
-            <div class="route-result-badge">${storeNum}</div>
+        storeHtml += `
+          <div class="route-result-item route-result-draggable" data-pos="${pos}">
+            <div class="route-result-drag-handle" title="Geser untuk mengubah urutan kunjungan">⠿</div>
+            <div class="route-result-badge">${o.suggestedNum}</div>
             <div class="route-result-text">
               <div class="route-result-nama">${escapeHtml(o.store.nama)}</div>
               <div class="route-result-alamat">${escapeHtml(o.store.alamat)}</div>
@@ -3835,7 +4092,9 @@
             </div>
           </div>
         `;
+        pos++;
       });
+      html += `<div id="routeResultStoreList" class="route-result-store-list">${storeHtml}</div>` + finishHtml;
       listEl.innerHTML = html;
     }
 
@@ -3844,7 +4103,6 @@
       routePreviewLayer = L.layerGroup().addTo(map);
       const latlngs = [[routeStart.lat, routeStart.lng], ...ordered.map(o => [o.store.lat, o.store.lng])];
       L.polyline(latlngs, { color: '#4f46e5', weight: 3, opacity: .7, dashArray: '6 8' }).addTo(routePreviewLayer);
-      let storeNum = 0;
       ordered.forEach((o) => {
         if (o.isFinish) {
           L.circleMarker([o.store.lat, o.store.lng], {
@@ -3852,14 +4110,96 @@
           }).addTo(routePreviewLayer).bindTooltip('Finish', { permanent: true, direction: 'top' });
           return;
         }
-        storeNum++;
+        // Label marker di peta ikut pakai suggestedNum (bukan posisi
+        // tampil saat ini) supaya konsisten dengan badge di daftar hasil.
         L.circleMarker([o.store.lat, o.store.lng], {
           radius: 8, color: '#4f46e5', weight: 2, fillColor: '#fff', fillOpacity: 1
-        }).addTo(routePreviewLayer).bindTooltip(String(storeNum), { permanent: true, direction: 'top' });
+        }).addTo(routePreviewLayer).bindTooltip(String(o.suggestedNum), { permanent: true, direction: 'top' });
       });
       try {
         map.fitBounds(L.latLngBounds(latlngs), { padding: [60, 60] });
       } catch (e) {}
+    }
+
+    // Hitung ulang jarak "+X km dari titik sebelumnya" untuk tiap item
+    // sesuai urutan routeResultOrdered SAAT INI (dipanggil ulang setelah
+    // user drag-reorder), supaya info jarak tetap akurat walau urutan
+    // kunjungan sudah bukan urutan saran sistem lagi.
+    function recalcRouteKm() {
+      let current = { lat: routeStart.lat, lng: routeStart.lng };
+      routeResultOrdered.forEach(o => {
+        o.km = haversineKm(current.lat, current.lng, o.store.lat, o.store.lng);
+        current = { lat: o.store.lat, lng: o.store.lng };
+      });
+    }
+
+    // ---- Drag-reorder daftar hasil rute (Pointer Events: jalan di mouse
+    // maupun sentuhan/touch, beda dari HTML5 drag-and-drop yang tidak
+    // reliable di browser mobile). Badge nomor (suggestedNum) TIDAK ikut
+    // berubah — hanya urutan tampil, jarak "+X km", preview di peta, dan
+    // link Google Maps yang mengikuti urutan baru pilihan user. ----
+    let routeDragEl = null;
+    let routeDragPointerId = null;
+
+    function initRouteResultDrag() {
+      const container = document.getElementById('routeResultList');
+
+      container.addEventListener('pointerdown', (e) => {
+        const handle = e.target.closest('.route-result-drag-handle');
+        if (!handle) return;
+        const item = handle.closest('.route-result-draggable');
+        if (!item) return;
+        e.preventDefault();
+        routeDragEl = item;
+        routeDragPointerId = e.pointerId;
+        item.classList.add('dragging');
+        try { item.setPointerCapture(routeDragPointerId); } catch (err) {}
+      });
+
+      container.addEventListener('pointermove', (e) => {
+        if (!routeDragEl || e.pointerId !== routeDragPointerId) return;
+        const storeList = document.getElementById('routeResultStoreList');
+        if (!storeList) return;
+        const siblings = Array.from(storeList.querySelectorAll('.route-result-draggable')).filter(el => el !== routeDragEl);
+        const y = e.clientY;
+        let placed = false;
+        for (const sib of siblings) {
+          const rect = sib.getBoundingClientRect();
+          if (y < rect.top + rect.height / 2) {
+            storeList.insertBefore(routeDragEl, sib);
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) storeList.appendChild(routeDragEl);
+      });
+
+      const endRouteDrag = (e) => {
+        if (!routeDragEl || e.pointerId !== routeDragPointerId) return;
+        routeDragEl.classList.remove('dragging');
+        try { routeDragEl.releasePointerCapture(routeDragPointerId); } catch (err) {}
+
+        // Baca urutan DOM final: tiap item masih menyimpan data-pos =
+        // posisi ASLI-nya di array toko (dari render sebelum di-drag).
+        // Urutan DOM baru dipakai untuk menyusun ulang routeResultOrdered.
+        const storeList = document.getElementById('routeResultStoreList');
+        const finishItem = routeResultOrdered.find(o => o.isFinish);
+        const storeItemsAtRender = routeResultOrdered.filter(o => !o.isFinish);
+        const newStoreItems = Array.from(storeList.querySelectorAll('.route-result-draggable'))
+          .map(el => storeItemsAtRender[parseInt(el.dataset.pos, 10)])
+          .filter(Boolean);
+
+        routeResultOrdered = finishItem ? [...newStoreItems, finishItem] : newStoreItems;
+        recalcRouteKm();
+        renderRouteResult(routeResultOrdered);
+        drawRoutePreview(routeResultOrdered);
+
+        routeDragEl = null;
+        routeDragPointerId = null;
+      };
+
+      container.addEventListener('pointerup', endRouteDrag);
+      container.addEventListener('pointercancel', endRouteDrag);
     }
 
     function clearRoutePreview() {
@@ -3893,6 +4233,12 @@
       if (routeStartMarker) { try { map.removeLayer(routeStartMarker); } catch (e) {} routeStartMarker = null; }
       routeFinish = null;
       if (routeFinishMarker) { try { map.removeLayer(routeFinishMarker); } catch (e) {} routeFinishMarker = null; }
+      routeManualStores.forEach((s, key) => {
+        const marker = routeManualMarkers.get(key);
+        if (marker) { try { map.removeLayer(marker); } catch (e) {} }
+      });
+      routeManualStores.clear();
+      routeManualMarkers.clear();
       clearRoutePreview();
     }
 
@@ -3930,6 +4276,29 @@
       setRouteFinish(parseFloat(r.lat), parseFloat(r.lon), r.display_name);
       document.getElementById('routeFinishAddressInput').value = r.display_name;
       document.getElementById('routeFinishAddressSuggestions').classList.remove('visible');
+    });
+
+    document.getElementById('routeTokoAddressInput').addEventListener('input', (e) => onRouteTokoAddressInput(e.target.value));
+    document.getElementById('routeTokoPickCancelBtn').addEventListener('click', () => {
+      cancelPickRouteTokoOnMap();
+      document.getElementById('routeModal').style.display = 'flex';
+    });
+
+    document.getElementById('routeTokoAddressSuggestions').addEventListener('click', (e) => {
+      const item = e.target.closest('.route-address-suggestion-item');
+      if (!item || item.dataset.idx == null) return;
+      const r = routeTokoAddressResults[parseInt(item.dataset.idx, 10)];
+      if (!r) return;
+      addManualRouteToko(parseFloat(r.lat), parseFloat(r.lon), (r.display_name || '').split(',')[0], r.display_name);
+      document.getElementById('routeTokoAddressInput').value = '';
+      document.getElementById('routeTokoAddressSuggestions').classList.remove('visible');
+      document.getElementById('routeTokoAddressSuggestions').innerHTML = '';
+    });
+
+    document.getElementById('routeTokoManualList').addEventListener('click', (e) => {
+      const btn = e.target.closest('.route-toko-manual-item-remove');
+      if (!btn || !btn.dataset.key) return;
+      removeManualRouteToko(btn.dataset.key);
     });
 
     document.getElementById('routeTokoList').addEventListener('change', (e) => {
@@ -4095,6 +4464,7 @@
         initFeatureToggles();
         loadData();
         handleViewportChange();
+        initRouteResultDrag();
         pushBackGuard();
       } catch (err) {
         console.error('onload error:', err);
