@@ -1418,6 +1418,7 @@
         <div class="mode-chip-row">
           <button type="button" class="mode-chip" id="modeChipProduk" onclick="switchChipMode('produk')">🎨 Produk</button>
           <button type="button" class="mode-chip" id="modeChipToko" onclick="switchChipMode('toko')">🏪 Toko</button>
+          <button type="button" class="mode-chip" id="modeChipSales" onclick="switchChipMode('sales')">👤 Sales</button>
           <button type="button" class="mode-chip" id="routeBtn" onclick="openRouteModal()">🚚 Rute</button>
         </div>
       </div>
@@ -1642,9 +1643,12 @@
     let lastSummaryLabel = null;
     let storeList = [];           // nama-nama toko unik, untuk autocomplete
     let currentMode = 'none';     // 'none' | 'search' | 'all'
-    let chipMode = null;          // null | 'produk' | 'toko' — null = belum
+    let chipMode = null;          // null | 'produk' | 'toko' | 'sales' — null = belum
                                    // dipilih user. Tidak ada yang aktif sampai
                                    // user menekan salah satu chip sendiri.
+    let salesList = [];           // nama-nama sales unik (kolom SALES OK), untuk daftar menu Sales
+    let selectedSales = null;     // nama sales yang sedang dipilih di menu Sales
+                                   // (null = masih di daftar semua sales)
     // Render otomatis PERTAMA (begitu data selesai dimuat, sebelum ada
     // interaksi user apa pun) harus membuka sheet dalam keadaan minimize,
     // supaya peta terlihat penuh saat aplikasi baru dibuka. Setelah user
@@ -2542,6 +2546,27 @@
           localStorage.setItem('nsiDataTime', String(Date.now()));
         }
 
+        // Normalisasi nama kolom sales: script Apps Script sumber data bisa
+        // mengembalikan key JSON dengan format berbeda-beda (salesOk, sales_ok,
+        // "SALES OK", dst) tergantung header di sheet. Dicoba beberapa
+        // kemungkinan nama field, lalu disamakan jadi row.salesOk supaya
+        // seluruh kode di bawah cukup pakai satu nama field saja.
+        const SALES_FIELD_CANDIDATES = ['salesOK', 'salesOk', 'sales_ok', 'SALES OK', 'sales', 'Sales OK', 'salesok', 'namaSales'];
+        allData.forEach(row => {
+          if (row.salesOk) return; // sudah ada dari field asli bernama persis "salesOk"
+          for (const cand of SALES_FIELD_CANDIDATES) {
+            if (row[cand] !== undefined && row[cand] !== null && String(row[cand]).trim() !== '') {
+              row.salesOk = row[cand];
+              return;
+            }
+          }
+        });
+
+        // Daftar nama sales unik (kolom SALES OK), dipakai untuk menu "Sales".
+        salesList = Array.from(new Set(
+          allData.map(r => (r.salesOk || '').trim()).filter(Boolean)
+        )).sort((a, b) => a.localeCompare(b, 'id'));
+
         // Bangun daftar produk secara dinamis dari data, sebagai tambahan
         // terhadap daftar bawaan, supaya produk baru di sheet otomatis muncul.
         const produkDariData = new Set(
@@ -2595,6 +2620,8 @@
         tampilkanSemuaToko();
       } else if (chipMode === 'produk') {
         showProductCatalog();
+      } else if (chipMode === 'sales') {
+        showSalesCatalog();
       } else {
         // Belum pilih mode: bersihkan list, sembunyikan sheet, marker tetap
         currentMode = 'none';
@@ -2646,16 +2673,183 @@
       }
     }
 
-    // Switch chip Produk/Toko (user harus memilih sendiri — tidak ada default):
+    // Tampilan default chip "Sales": kalau belum ada sales terpilih, tampilkan
+    // daftar semua nama sales (dari kolom SALES OK) A-Z. Kalau user sudah
+    // klik salah satu sales, tampilkan daftar toko milik sales itu.
+    // forceOpen=true saat user menekan chip Sales (buka sheet meski search kosong).
+    function showSalesCatalog(forceOpen) {
+      try {
+        if (selectedSales) { renderSalesToko(forceOpen); return; }
+
+        const resultsDiv = document.getElementById('results');
+        currentMode = 'none';
+        currentStores = [];
+        lastSummaryStores = [];
+        lastSummaryLabel = null;
+        if (markerLayer) markerLayer.clearLayers();
+        document.getElementById('resultCount').textContent = '';
+        document.getElementById('resultHeaderRow').style.display = 'none';
+        updateCitySummary([], null);
+
+        let html = '';
+        if (!salesList.length) {
+          html = `<div class="empty-state">Belum ada data sales</div>`;
+        } else {
+          salesList.forEach(nama => {
+            // data-sales + event delegation (aman dari karakter khusus di nama sales)
+            html += `<div class="suggestion-item" data-sales="${escapeHtml(nama)}">👤 ${escapeHtml(nama)}</div>`;
+          });
+        }
+        resultsDiv.style.display = '';
+        resultsDiv.innerHTML = html;
+        autoOpenSheet(salesList.length > 0, !!forceOpen);
+        updateFeatureButtonState();
+        applyCitySummaryListVisibility();
+      } catch (err) {
+        console.error('showSalesCatalog error:', err);
+      }
+    }
+
+    // Dipanggil saat user klik salah satu nama sales dari daftar → tampilkan
+    // daftar toko milik sales tsb (dikelompokkan per toko).
+    function selectSalesName(nama) {
+      selectedSales = nama;
+      document.getElementById('search').value = '';
+      renderSalesToko(true);
+      closeKeyboard();
+    }
+
+    // Daftar toko milik satu sales yang sedang dipilih, dikelompokkan per
+    // toko (satu toko bisa punya beberapa baris produk) — sama polanya
+    // dengan tampilkanSemuaToko(), hanya difilter berdasarkan kolom SALES OK.
+    function renderSalesToko(forceOpen) {
+      try {
+        currentMode = 'all';
+        const targetLower = (selectedSales || '').toLowerCase();
+
+        const groups = new Map();
+        allData.forEach(row => {
+          if ((row.salesOk || '').trim().toLowerCase() !== targetLower) return;
+          const namaToko = (row.pelanggan || '').trim();
+          const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
+            : (namaToko.toLowerCase() + '|' + (row.alamat || '').toLowerCase());
+          if (!groups.has(key)) {
+            groups.set(key, {
+              pelanggan: row.pelanggan,
+              alamat: row.alamat,
+              latitude: row.latitude,
+              longitude: row.longitude,
+              produkSet: new Set()
+            });
+          }
+          if (row.produk) groups.get(key).produkSet.add(row.produk);
+        });
+
+        renderStoreList(groups, {
+          allMode: true,
+          emptyHtml: 'Belum ada toko untuk sales ini',
+          summaryLabel: `Sales: ${selectedSales}`,
+          forceOpen: !!forceOpen,
+          salesBack: true
+        });
+      } catch (err) {
+        console.error('renderSalesToko error:', err);
+      }
+    }
+
+    // Tombol "kembali" dari daftar toko satu sales → balik ke daftar semua sales.
+    function backToSalesCatalog() {
+      selectedSales = null;
+      document.getElementById('search').value = '';
+      showSalesCatalog(true);
+    }
+
+    // Pencarian saat chip Sales aktif: kalau belum pilih sales, filter daftar
+    // nama sales sesuai ketikan; kalau sudah pilih sales, filter toko milik
+    // sales itu berdasarkan nama toko.
+    function cariSales() {
+      try {
+        const keywordRaw = document.getElementById('search').value.trim();
+        const keyword = keywordRaw.toLowerCase();
+        if (!keyword) { showSalesCatalog(); return; }
+
+        if (selectedSales) {
+          currentMode = 'search';
+          const targetLower = selectedSales.toLowerCase();
+          const groups = new Map();
+          allData.forEach(row => {
+            if ((row.salesOk || '').trim().toLowerCase() !== targetLower) return;
+            const namaToko = (row.pelanggan || '').toLowerCase();
+            if (!namaToko.includes(keyword)) return;
+            const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
+              : (namaToko + '|' + (row.alamat || '').toLowerCase());
+            if (!groups.has(key)) {
+              groups.set(key, {
+                pelanggan: row.pelanggan,
+                alamat: row.alamat,
+                latitude: row.latitude,
+                longitude: row.longitude,
+                produkSet: new Set()
+              });
+            }
+            if (row.produk) groups.get(key).produkSet.add(row.produk);
+          });
+          renderStoreList(groups, {
+            allMode: false,
+            emptyHtml: 'Tidak ditemukan toko dengan nama itu',
+            summaryLabel: `Sales: ${selectedSales} · Pencarian: "${keywordRaw}"`,
+            salesBack: true
+          });
+        } else {
+          currentMode = 'none';
+          currentStores = [];
+          lastSummaryStores = [];
+          lastSummaryLabel = null;
+          if (markerLayer) markerLayer.clearLayers();
+          document.getElementById('resultCount').textContent = '';
+          document.getElementById('resultHeaderRow').style.display = 'none';
+          updateCitySummary([], null);
+
+          const list = salesList.filter(s => s.toLowerCase().includes(keyword));
+          let html = '';
+          if (!list.length) {
+            html = `<div class="empty-state">Sales tidak ditemukan</div>`;
+          } else {
+            list.forEach(nama => {
+              html += `<div class="suggestion-item" data-sales="${escapeHtml(nama)}">👤 ${escapeHtml(nama)}</div>`;
+            });
+          }
+          const resultsDiv = document.getElementById('results');
+          resultsDiv.style.display = '';
+          resultsDiv.innerHTML = html;
+          autoOpenSheet(list.length > 0, false);
+          updateFeatureButtonState();
+          applyCitySummaryListVisibility();
+        }
+      } catch (err) {
+        console.error('cariSales error:', err);
+      }
+    }
+
+    // Switch chip Produk/Toko/Sales (user harus memilih sendiri — tidak ada default):
     // - Produk → daftar nama produk di sheet
     // - Toko  → semua toko di sheet
+    // - Sales → daftar nama sales (kolom SALES OK) → klik satu sales → daftar tokonya
     function switchChipMode(mode) {
       try {
-        // Toggle: tekan chip yang sama lagi → batalkan pilihan
+        // Toggle: tekan chip yang sama lagi → mundur satu level (khusus Sales,
+        // kalau sedang lihat daftar toko satu sales, mundur dulu ke daftar
+        // semua sales) atau batalkan pilihan mode sama sekali.
         if (chipMode === mode) {
+          if (mode === 'sales' && selectedSales) {
+            backToSalesCatalog();
+            updateModeChipsVisibility();
+            return;
+          }
           chipMode = null;
           document.getElementById('modeChipProduk').classList.remove('active');
           document.getElementById('modeChipToko').classList.remove('active');
+          document.getElementById('modeChipSales').classList.remove('active');
           if (isSearchEmpty()) {
             renderDefaultView(); // sheet kembali hidden
           } else {
@@ -2668,10 +2862,14 @@
         chipMode = mode;
         document.getElementById('modeChipProduk').classList.toggle('active', mode === 'produk');
         document.getElementById('modeChipToko').classList.toggle('active', mode === 'toko');
+        document.getElementById('modeChipSales').classList.toggle('active', mode === 'sales');
 
         if (isSearchEmpty()) {
           if (mode === 'toko') {
             tampilkanSemuaToko(true);
+          } else if (mode === 'sales') {
+            selectedSales = null;
+            showSalesCatalog(true);
           } else {
             showProductCatalog(true);
           }
@@ -2728,6 +2926,11 @@
 
     function cariProduk() {
       try {
+        // Menu Sales punya alur & pencarian sendiri (daftar sales → daftar
+        // toko per sales), jadi didelegasikan ke cariSales() alih-alih
+        // dicampur ke logika pencarian produk/toko di bawah ini.
+        if (chipMode === 'sales') { cariSales(); return; }
+
         const keyword = document.getElementById('search').value.toLowerCase().trim();
         const chips = Array.from(selectedProducts).map(p => p.toLowerCase());
 
@@ -2984,6 +3187,12 @@
           if (total > 0) suggestionHtml += `<div class="suggestion-group-label">Toko</div>`;
         }
 
+        // Saat menampilkan daftar toko milik satu sales (menu Sales), kasih
+        // tautan kembali ke daftar semua sales di bagian paling atas.
+        const backHtml = opts.salesBack
+          ? `<div class="suggestion-item" id="salesBackLink">⬅ Daftar Sales</div>`
+          : '';
+
         const bodyHtml = total > 0
           ? html
           : (produkSuggestions.length ? '' : `<div class="empty-state">${opts.emptyHtml || 'Tidak ditemukan hasil'}</div>`);
@@ -2992,7 +3201,7 @@
         document.getElementById('resultHeaderRow').style.display = total ? 'flex' : 'none';
         // Reset display dulu supaya list tidak nyangkut display:none dari mode ringkasan
         resultsDiv.style.display = '';
-        resultsDiv.innerHTML = suggestionHtml + bodyHtml;
+        resultsDiv.innerHTML = backHtml + suggestionHtml + bodyHtml;
         autoOpenSheet(total > 0 || produkSuggestions.length > 0, !!opts.forceOpen);
         if (total > 0 || produkSuggestions.length > 0) expandListIfCollapsed();
 
@@ -3414,10 +3623,13 @@
         selectedProducts.clear();
         renderChips();
         chipMode = null;
+        selectedSales = null;
         const chipProduk = document.getElementById('modeChipProduk');
         const chipToko = document.getElementById('modeChipToko');
+        const chipSales = document.getElementById('modeChipSales');
         if (chipProduk) chipProduk.classList.remove('active');
         if (chipToko) chipToko.classList.remove('active');
+        if (chipSales) chipSales.classList.remove('active');
 
         // Pastikan list & tombol Analisis tidak tertahan state rusak
         const resultsDiv = document.getElementById('results');
@@ -4444,9 +4656,16 @@
         if (!isNaN(idx)) focusMarker(idx);
         return;
       }
+      const backLink = e.target.closest('#salesBackLink');
+      if (backLink) { backToSalesCatalog(); return; }
+
       const sug = e.target.closest('.suggestion-item');
       if (sug && sug.dataset.produk) {
         selectProduct(sug.dataset.produk);
+        return;
+      }
+      if (sug && sug.dataset.sales) {
+        selectSalesName(sug.dataset.sales);
       }
     });
 
