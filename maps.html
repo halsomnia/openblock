@@ -762,6 +762,33 @@
       text-transform: uppercase;
       letter-spacing: .05em;
     }
+    /* Item daftar katalog (menu Produk & Sales): nama di kiri, badge jumlah toko di kanan */
+    .catalog-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .catalog-list-item .catalog-item-name {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .catalog-count-badge {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(79, 70, 229, .1);
+      padding: 4px 10px;
+      border-radius: var(--r-pill);
+      white-space: nowrap;
+    }
     #results {
       flex: 1;
       min-height: 0;
@@ -1632,6 +1659,7 @@
     let currentStores = [];
     let allData = [];
     let selectedProducts = new Set();
+    let productStoreCounts = new Map(); // nama produk -> jumlah toko unik yang punya produk itu (untuk badge "X Toko")
     // Fitur tambahan (on/off), tersimpan supaya pilihan user tidak hilang
     // saat halaman dibuka lagi. Kalau semua fitur off, tampilan kembali
     // ke default (daftar toko/produk biasa, tanpa panel tambahan apa pun).
@@ -1647,6 +1675,7 @@
                                    // dipilih user. Tidak ada yang aktif sampai
                                    // user menekan salah satu chip sendiri.
     let salesList = [];           // nama-nama sales unik (kolom SALES OK), untuk daftar menu Sales
+    let salesStoreCounts = new Map(); // nama sales -> jumlah toko unik miliknya (untuk badge "X Toko")
     let selectedSales = null;     // nama sales yang sedang dipilih di menu Sales
                                    // (null = masih di daftar semua sales)
     // Render otomatis PERTAMA (begitu data selesai dimuat, sebelum ada
@@ -2567,6 +2596,25 @@
           allData.map(r => (r.salesOk || '').trim()).filter(Boolean)
         )).sort((a, b) => a.localeCompare(b, 'id'));
 
+        // Jumlah toko unik per sales (satu toko bisa punya beberapa baris
+        // produk, jadi dihitung berdasarkan kode/nama+alamat sama seperti
+        // pengelompokan toko di tempat lain) — ditampilkan sebagai badge
+        // "X Toko" di sebelah nama sales pada daftar menu Sales.
+        salesStoreCounts = new Map();
+        {
+          const tokoSetPerSales = new Map();
+          allData.forEach(row => {
+            const namaSales = (row.salesOk || '').trim();
+            if (!namaSales) return;
+            const namaToko = (row.pelanggan || '').trim();
+            const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
+              : (namaToko.toLowerCase() + '|' + (row.alamat || '').toLowerCase());
+            if (!tokoSetPerSales.has(namaSales)) tokoSetPerSales.set(namaSales, new Set());
+            tokoSetPerSales.get(namaSales).add(key);
+          });
+          tokoSetPerSales.forEach((set, namaSales) => salesStoreCounts.set(namaSales, set.size));
+        }
+
         // Bangun daftar produk secara dinamis dari data, sebagai tambahan
         // terhadap daftar bawaan, supaya produk baru di sheet otomatis muncul.
         const produkDariData = new Set(
@@ -2576,6 +2624,24 @@
           if (!productList.includes(p)) productList.push(p);
         });
         productList.sort((a, b) => a.localeCompare(b, 'id'));
+
+        // Jumlah toko unik per produk (satu toko yang punya produk sama di
+        // beberapa baris tetap dihitung 1) — ditampilkan sebagai badge
+        // "X Toko" di sebelah nama produk pada daftar menu Produk.
+        productStoreCounts = new Map();
+        {
+          const tokoSetPerProduk = new Map();
+          allData.forEach(row => {
+            const namaProduk = (row.produk || '').trim();
+            if (!namaProduk) return;
+            const namaToko = (row.pelanggan || '').trim();
+            const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
+              : (namaToko.toLowerCase() + '|' + (row.alamat || '').toLowerCase());
+            if (!tokoSetPerProduk.has(namaProduk)) tokoSetPerProduk.set(namaProduk, new Set());
+            tokoSetPerProduk.get(namaProduk).add(key);
+          });
+          tokoSetPerProduk.forEach((set, namaProduk) => productStoreCounts.set(namaProduk, set.size));
+        }
 
         // Daftar nama toko unik, dipakai untuk autocomplete saat user
         // mengetik nama toko (bukan cuma nama produk).
@@ -2659,7 +2725,11 @@
         } else {
           list.forEach(prod => {
             // data-produk + event delegation (aman dari karakter khusus di nama produk)
-            html += `<div class="suggestion-item" data-produk="${escapeHtml(prod)}">🎨 ${escapeHtml(prod)}</div>`;
+            const jumlahToko = productStoreCounts.get(prod) || 0;
+            html += `<div class="suggestion-item catalog-list-item" data-produk="${escapeHtml(prod)}">`
+              + `<span class="catalog-item-name">🎨 ${escapeHtml(prod)}</span>`
+              + `<span class="catalog-count-badge">${jumlahToko} Toko</span>`
+              + `</div>`;
           });
         }
         // Pastikan list tidak tertahan display:none dari mode ringkasan
@@ -2697,7 +2767,11 @@
         } else {
           salesList.forEach(nama => {
             // data-sales + event delegation (aman dari karakter khusus di nama sales)
-            html += `<div class="suggestion-item" data-sales="${escapeHtml(nama)}">👤 ${escapeHtml(nama)}</div>`;
+            const jumlahToko = salesStoreCounts.get(nama) || 0;
+            html += `<div class="suggestion-item catalog-list-item" data-sales="${escapeHtml(nama)}">`
+              + `<span class="catalog-item-name">👤 ${escapeHtml(nama)}</span>`
+              + `<span class="catalog-count-badge">${jumlahToko} Toko</span>`
+              + `</div>`;
           });
         }
         resultsDiv.style.display = '';
@@ -2816,7 +2890,11 @@
             html = `<div class="empty-state">Sales tidak ditemukan</div>`;
           } else {
             list.forEach(nama => {
-              html += `<div class="suggestion-item" data-sales="${escapeHtml(nama)}">👤 ${escapeHtml(nama)}</div>`;
+              const jumlahToko = salesStoreCounts.get(nama) || 0;
+              html += `<div class="suggestion-item catalog-list-item" data-sales="${escapeHtml(nama)}">`
+                + `<span class="catalog-item-name">👤 ${escapeHtml(nama)}</span>`
+                + `<span class="catalog-count-badge">${jumlahToko} Toko</span>`
+                + `</div>`;
             });
           }
           const resultsDiv = document.getElementById('results');
