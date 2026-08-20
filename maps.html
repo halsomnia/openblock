@@ -1390,6 +1390,183 @@
       margin-top: 10px;
       line-height: 1.5;
     }
+
+    /* =====================================================================
+       ADMIN PANEL — semua class/ID di-prefix "adm-" / "adm" supaya tidak
+       bentrok dengan style & elemen peta yang sudah ada.
+       ===================================================================== */
+    .adm-fab {
+      position: absolute; top: 16px; right: 16px; z-index: 600;
+      width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line);
+      background: var(--surface); color: var(--ink-soft); box-shadow: var(--shadow-sm);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: background .15s var(--ease), color .15s var(--ease), transform .12s var(--ease);
+    }
+    .adm-fab:hover { background: var(--accent-tint); color: var(--accent-dark); }
+    .adm-fab:active { transform: scale(.94); }
+    @media (max-width: 768px) { .adm-fab { top: 12px; right: 12px; width: 40px; height: 40px; } }
+
+    .adm-hidden { display: none !important; }
+    .adm-visible { display: flex !important; }
+
+    .adm-modal-backdrop {
+      position: fixed; inset: 0; background: rgba(24,24,27,.44); backdrop-filter: blur(2px);
+      z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .adm-modal-backdrop.adm-visible { display: flex; }
+    .adm-modal {
+      background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+      width: 100%; max-width: 480px; max-height: calc(100vh - 40px); overflow-y: auto;
+      animation: admModalIn .18s var(--ease);
+    }
+    .adm-modal.adm-modal-sm { max-width: 380px; }
+    @keyframes admModalIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+    .adm-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px 0; }
+    .adm-modal-head h3 { font-size: 17px; font-weight: 700; color: var(--ink); }
+    .adm-modal-head p { font-size: 12.5px; color: var(--ink-faint); margin-top: 2px; }
+    .adm-modal-close {
+      width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--canvas); color: var(--ink-soft);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .adm-modal-close:hover { background: var(--line); }
+    .adm-modal-body { padding: 16px 22px 0; }
+    .adm-field { margin-bottom: 14px; }
+    .adm-field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+    .adm-field .adm-req { color: #dc2626; margin-left: 2px; }
+    .adm-field input, .adm-field textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: var(--r-xs); padding: 10px 13px;
+      font-family: inherit; font-size: 14px; color: var(--ink); outline: none;
+      transition: border-color .13s var(--ease), box-shadow .13s var(--ease); background: var(--surface);
+    }
+    .adm-field input:focus, .adm-field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+    .adm-field textarea { resize: vertical; min-height: 56px; }
+    .adm-field-row { display: flex; gap: 10px; }
+    .adm-field-row .adm-field { flex: 1; }
+    .adm-field-with-btn { display: flex; gap: 8px; }
+    .adm-field-with-btn input { flex: 1; }
+    .adm-geo-suggestions { border: 1px solid var(--line); border-radius: var(--r-xs); margin-top: 6px; overflow: hidden; display: none; box-shadow: var(--shadow-sm); }
+    .adm-geo-suggestions.adm-visible { display: block; }
+    .adm-geo-item { padding: 9px 12px; font-size: 12.5px; cursor: pointer; border-bottom: 1px solid var(--line); }
+    .adm-geo-item:last-child { border-bottom: none; }
+    .adm-geo-item:hover { background: var(--accent-tint); }
+    .adm-modal-foot { display: flex; gap: 10px; padding: 18px 22px 22px; position: sticky; bottom: 0; background: var(--surface); }
+    .adm-modal-foot .adm-btn { flex: 1; justify-content: center; }
+    .adm-confirm-icon {
+      width: 52px; height: 52px; border-radius: 50%; background: #fef2f2; color: #dc2626;
+      display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 20px auto 4px;
+    }
+    .adm-confirm-body { text-align: center; padding: 0 22px; }
+    .adm-confirm-body h3 { font-size: 16.5px; font-weight: 700; margin-bottom: 6px; color: var(--ink); }
+    .adm-confirm-body p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+    .adm-confirm-body .adm-target-name { font-weight: 700; color: var(--ink); }
+
+    .adm-btn {
+      display: inline-flex; align-items: center; gap: 7px; border: none; cursor: pointer;
+      font-family: inherit; font-weight: 600; font-size: 13.5px; border-radius: var(--r-pill);
+      padding: 10px 18px; transition: transform .12s var(--ease), background .15s var(--ease); white-space: nowrap;
+    }
+    .adm-btn:active { transform: scale(.96); }
+    .adm-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 1px 2px rgba(79,70,229,.25); }
+    .adm-btn-primary:hover { background: var(--accent-dark); }
+    .adm-btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+    .adm-btn-ghost:hover { background: var(--canvas); border-color: var(--line-strong); }
+    .adm-btn-icon { padding: 9px; border-radius: var(--r-pill); }
+    .adm-btn-sm { padding: 7px 13px; font-size: 12.5px; }
+    .adm-btn:disabled { opacity: .45; cursor: not-allowed; }
+    .adm-btn-danger { background: #dc2626; color: #fff; }
+    .adm-btn-danger:hover { background: #b91c1c; }
+
+    /* ===== Panel utama admin (full screen overlay) ===== */
+    .adm-panel-overlay {
+      position: fixed; inset: 0; z-index: 1500; background: var(--canvas);
+      display: none; flex-direction: column; font-family: 'DM Sans', sans-serif;
+      color: var(--ink); letter-spacing: -0.01em;
+    }
+    .adm-panel-overlay.adm-visible { display: flex; }
+    .adm-topbar { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); flex-shrink: 0; }
+    .adm-topbar-inner { max-width: 1180px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .adm-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .adm-brand-mark { width: 34px; height: 34px; border-radius: 10px; background: var(--ink); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; }
+    .adm-brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+    .adm-brand-text b { font-size: 15px; font-weight: 700; }
+    .adm-brand-text span { font-size: 11.5px; color: var(--ink-faint); }
+    .adm-search-box { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 8px; background: var(--canvas); border: 1px solid var(--line); border-radius: var(--r-pill); padding: 9px 16px; transition: border-color .15s var(--ease), box-shadow .15s var(--ease); }
+    .adm-search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+    .adm-search-box svg { flex-shrink: 0; color: var(--ink-faint); }
+    .adm-search-box input { border: none; outline: none; background: transparent; font-size: 14px; width: 100%; color: var(--ink); }
+    .adm-search-clear { display: none; border: none; background: none; color: var(--ink-faint); cursor: pointer; font-size: 16px; padding: 2px 4px; border-radius: 6px; }
+    .adm-search-clear:hover { background: var(--line); color: var(--ink); }
+    .adm-search-clear.adm-visible2 { display: block; }
+
+    .adm-stats-row { max-width: 1180px; margin: 0 auto; padding: 18px 24px 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .adm-stat-chip { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 108px; box-shadow: var(--shadow-xs); }
+    .adm-stat-chip b { font-size: 19px; font-weight: 700; }
+    .adm-stat-chip span { font-size: 11.5px; color: var(--ink-soft); font-weight: 500; }
+
+    .adm-filters-row { max-width: 1180px; margin: 0 auto; padding: 10px 24px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .adm-filters-row select { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-pill); padding: 8px 14px; font-family: inherit; font-size: 13px; color: var(--ink); cursor: pointer; font-weight: 500; outline: none; }
+    .adm-filters-row select:hover { border-color: var(--line-strong); }
+    .adm-result-count { margin-left: auto; font-size: 12.5px; color: var(--ink-faint); font-weight: 500; }
+
+    .adm-content { max-width: 1180px; margin: 0 auto; padding: 18px 24px 80px; width: 100%; overflow-y: auto; flex: 1; }
+    .adm-toko-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+    .adm-toko-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 18px; box-shadow: var(--shadow-xs); transition: box-shadow .18s var(--ease), border-color .18s var(--ease); display: flex; flex-direction: column; gap: 12px; }
+    .adm-toko-card:hover { box-shadow: var(--shadow-sm); border-color: var(--line-strong); }
+    .adm-toko-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .adm-toko-id { font-size: 10.5px; font-weight: 600; color: var(--accent-dark); background: var(--accent-tint); padding: 3px 9px; border-radius: var(--r-pill); letter-spacing: .02em; display: inline-block; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+    .adm-toko-name { font-size: 16px; font-weight: 700; line-height: 1.3; }
+    .adm-toko-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .adm-icon-btn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid transparent; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink-soft); transition: background .13s var(--ease), color .13s var(--ease); }
+    .adm-icon-btn:hover { background: var(--canvas); color: var(--ink); }
+    .adm-icon-btn.adm-danger:hover { background: #fef2f2; color: #dc2626; }
+    .adm-toko-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+    .adm-badge { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: var(--r-pill); display: inline-flex; align-items: center; gap: 4px; }
+    .adm-badge-sales { background: #eef2ff; color: #4338ca; }
+    .adm-badge-spv { background: #fff7ed; color: #c2410c; }
+    .adm-toko-addr { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; display: flex; gap: 7px; }
+    .adm-toko-addr svg { flex-shrink: 0; margin-top: 2px; color: var(--ink-faint); }
+    .adm-toko-addr a { color: var(--accent); text-decoration: none; font-weight: 600; white-space: nowrap; }
+    .adm-toko-addr a:hover { text-decoration: underline; }
+    .adm-toko-coords { font-size: 11px; color: var(--ink-faint); margin-left: 23px; margin-top: -6px; font-family: 'DM Mono', monospace; }
+    .adm-toko-products { display: flex; flex-wrap: wrap; gap: 6px; border-top: 1px dashed var(--line); margin-top: 2px; padding-top: 10px; }
+    .adm-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--canvas); border: 1px solid var(--line); padding: 5px 6px 5px 11px; border-radius: var(--r-pill); font-size: 12px; font-weight: 500; color: var(--ink); transition: border-color .13s var(--ease); }
+    .adm-chip:hover { border-color: var(--line-strong); }
+    .adm-chip .adm-chip-edit { cursor: pointer; }
+    .adm-chip .adm-chip-edit:hover { color: var(--accent-dark); }
+    .adm-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: var(--line); color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; line-height: 1; transition: background .13s var(--ease), color .13s var(--ease); flex-shrink: 0; }
+    .adm-chip-x:hover { background: #dc2626; color: #fff; }
+    .adm-chip-add { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: 1px dashed var(--line-strong); padding: 5px 12px; border-radius: var(--r-pill); font-size: 12px; font-weight: 600; color: var(--ink-soft); cursor: pointer; transition: all .13s var(--ease); }
+    .adm-chip-add:hover { border-color: var(--accent); color: var(--accent-dark); background: var(--accent-tint); }
+    .adm-tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .adm-tag-list:not(:empty) { margin-bottom: 8px; }
+    .adm-chip-static { padding: 5px 11px; }
+
+    .adm-empty-state, .adm-loading-state { text-align: center; padding: 70px 20px; color: var(--ink-faint); }
+    .adm-empty-state .adm-icon2, .adm-loading-state .adm-icon2 { font-size: 34px; margin-bottom: 12px; display: block; }
+    .adm-empty-state b { color: var(--ink-soft); font-size: 15px; display: block; margin-bottom: 4px; }
+    .adm-empty-state p { font-size: 13px; }
+    .adm-spinner { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: admSpin .8s linear infinite; margin: 0 auto 14px; }
+    @keyframes admSpin { to { transform: rotate(360deg); } }
+    .adm-load-more-row { display: flex; justify-content: center; padding-top: 22px; }
+
+    .adm-toast-stack { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 2200; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+    .adm-toast { background: var(--ink); color: #fff; font-size: 13.5px; font-weight: 500; padding: 12px 18px; border-radius: var(--r-pill); box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 9px; animation: admToastIn .22s var(--ease); white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .adm-toast.adm-error { background: #dc2626; }
+    .adm-toast-dot { width: 7px; height: 7px; border-radius: 50%; background: #16a34a; flex-shrink: 0; }
+    .adm-toast.adm-error .adm-toast-dot { background: #fff; }
+    @keyframes admToastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .adm-auth-icon { width: 52px; height: 52px; border-radius: 50%; background: var(--accent-tint); color: var(--accent-dark); display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 22px auto 2px; }
+    .adm-auth-error { font-size: 12.5px; color: #dc2626; margin-top: 8px; display: none; }
+    .adm-auth-error.adm-visible2 { display: block; }
+
+    @media (max-width: 640px) {
+      .adm-topbar-inner { padding: 14px 16px; }
+      .adm-stats-row, .adm-filters-row, .adm-content { padding-left: 16px; padding-right: 16px; }
+      .adm-toko-grid { grid-template-columns: 1fr; }
+      .adm-brand-text span { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -1400,6 +1577,259 @@
     <div class="app-brand">
       <span class="brand-bold">NSI</span><span class="brand-normal"> Maps</span><span class="brand-by">by RonnyBDG</span>
     </div>
+
+    <!-- ===== Tombol buka halaman Admin ===== -->
+    <button id="admOpenBtn" class="adm-fab" title="Kelola Data (Admin)" aria-label="Kelola Data">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+    </button>
+
+    <!-- ===== Modal: gerbang password admin ===== -->
+    <div id="admAuthBackdrop" class="adm-modal-backdrop">
+      <div class="adm-modal adm-modal-sm">
+        <div class="adm-auth-icon">🔒</div>
+        <div class="adm-confirm-body">
+          <h3>Masuk Halaman Admin</h3>
+          <p>Masukkan password untuk mengelola data toko.</p>
+        </div>
+        <div class="adm-modal-body">
+          <div class="adm-field" style="margin-bottom:0;">
+            <label>Password</label>
+            <input type="password" id="admAuthInput" placeholder="Password admin" autocomplete="off">
+            <div class="adm-auth-error" id="admAuthError">Password salah, coba lagi.</div>
+          </div>
+        </div>
+        <div class="adm-modal-foot">
+          <button class="adm-btn adm-btn-ghost" id="admAuthCancelBtn">Batal</button>
+          <button class="adm-btn adm-btn-primary" id="admAuthSubmitBtn">Masuk</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Panel Admin (full screen) ===== -->
+    <div id="admPanel" class="adm-panel-overlay">
+      <div class="adm-topbar">
+        <div class="adm-topbar-inner">
+          <div class="adm-brand">
+            <button class="adm-btn adm-btn-ghost adm-btn-icon" id="admBackBtn" title="Kembali ke peta">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div class="adm-brand-text"><b>NSI Data Toko</b><span>Kelola data pelanggan &amp; produk</span></div>
+          </div>
+          <div class="adm-search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="admSearchInput" placeholder="Cari toko, No. Pel, sales, produk, alamat...">
+            <button class="adm-search-clear" id="admSearchClearBtn">✕</button>
+          </div>
+          <button class="adm-btn adm-btn-ghost adm-btn-icon" id="admRefreshBtn" title="Muat ulang data">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.6-6.36M21 4v6h-6"/></svg>
+          </button>
+          <button class="adm-btn adm-btn-ghost adm-btn-icon" id="admChangePassBtn" title="Ganti Password">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </button>
+          <button class="adm-btn adm-btn-primary" id="admAddTokoBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Toko
+          </button>
+        </div>
+      </div>
+
+      <div class="adm-content">
+        <div class="adm-stats-row" id="admStatsRow"></div>
+        <div class="adm-filters-row">
+          <select id="admFilterSales"><option value="">Semua Sales</option></select>
+          <select id="admFilterSpv"><option value="">Semua SPV</option></select>
+          <select id="admSortSelect">
+            <option value="name-asc">Nama A–Z</option>
+            <option value="name-desc">Nama Z–A</option>
+            <option value="nopel-desc">Terbaru dulu</option>
+            <option value="produk-desc">Produk terbanyak</option>
+          </select>
+          <span class="adm-result-count" id="admResultCount"></span>
+        </div>
+
+        <div id="admLoadingState" class="adm-loading-state">
+          <div class="adm-spinner"></div>
+          <p>Memuat data toko...</p>
+        </div>
+        <div id="admTokoGrid" class="adm-toko-grid adm-hidden"></div>
+        <div id="admEmptyState" class="adm-empty-state adm-hidden">
+          <span class="adm-icon2">🔍</span>
+          <b>Tidak ada toko yang cocok</b>
+          <p>Coba ubah kata kunci pencarian atau filter yang dipakai.</p>
+        </div>
+        <div class="adm-load-more-row adm-hidden" id="admLoadMoreRow">
+          <button class="adm-btn adm-btn-ghost" id="admLoadMoreBtn">Tampilkan lebih banyak</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal: Tambah / Edit Toko ===== -->
+    <div class="adm-modal-backdrop" id="admTokoModalBackdrop">
+      <div class="adm-modal">
+        <div class="adm-modal-head">
+          <div>
+            <h3 id="admTokoModalTitle">Tambah Toko</h3>
+            <p id="admTokoModalSubtitle">Isi data toko baru</p>
+          </div>
+          <button class="adm-modal-close" id="admTokoModalClose">✕</button>
+        </div>
+        <div class="adm-modal-body">
+          <div class="adm-field">
+            <label>No. Pelanggan</label>
+            <div class="adm-field-with-btn">
+              <input type="text" id="admFNoPel" placeholder="Otomatis jika dikosongkan">
+              <button class="adm-btn adm-btn-ghost adm-btn-sm" id="admGenNoPelBtn" type="button">Auto</button>
+            </div>
+          </div>
+          <div class="adm-field">
+            <label>Nama Toko / Pelanggan<span class="adm-req">*</span></label>
+            <input type="text" id="admFPelanggan" placeholder="cth. ABADI">
+          </div>
+          <div class="adm-field-row">
+            <div class="adm-field">
+              <label>Sales OK</label>
+              <input type="text" id="admFSalesOK" list="admSalesList" placeholder="cth. B1NONO">
+              <datalist id="admSalesList"></datalist>
+            </div>
+            <div class="adm-field">
+              <label>SPV</label>
+              <input type="text" id="admFSpv" list="admSpvList" placeholder="cth. REZA">
+              <datalist id="admSpvList"></datalist>
+            </div>
+          </div>
+          <div class="adm-field" id="admProdukFieldWrap">
+            <label>Produk<span class="adm-req">*</span></label>
+            <div class="adm-tag-list" id="admProdukTagList"></div>
+            <div class="adm-field-with-btn">
+              <input type="text" id="admFProduk" list="admProdukList" placeholder="Ketik nama produk lalu Enter">
+              <button class="adm-btn adm-btn-ghost adm-btn-sm" id="admProdukTagAddBtn" type="button">+ Tambah</button>
+            </div>
+            <datalist id="admProdukList"></datalist>
+          </div>
+          <div class="adm-field" id="admEditProdukWrap" style="display:none;">
+            <label>Produk toko ini</label>
+            <div class="adm-toko-products" id="admEditProdukChips" style="border-top:none;padding-top:0;margin-top:0;"></div>
+          </div>
+          <div class="adm-field">
+            <label>Alamat</label>
+            <textarea id="admFAlamat" placeholder="Alamat lengkap toko"></textarea>
+          </div>
+          <div class="adm-field">
+            <label>Cari koordinat dari alamat</label>
+            <div class="adm-field-with-btn">
+              <input type="text" id="admFGeoSearch" placeholder="Ketik alamat lalu pilih hasil">
+              <button class="adm-btn adm-btn-ghost adm-btn-sm" id="admGeoSearchBtn" type="button">Cari</button>
+            </div>
+            <div class="adm-geo-suggestions" id="admGeoSuggestions"></div>
+          </div>
+          <div class="adm-field-row">
+            <div class="adm-field">
+              <label>Latitude</label>
+              <input type="text" id="admFLat" placeholder="-6.869085">
+            </div>
+            <div class="adm-field">
+              <label>Longitude</label>
+              <input type="text" id="admFLng" placeholder="107.588192">
+            </div>
+          </div>
+        </div>
+        <div class="adm-modal-foot">
+          <button class="adm-btn adm-btn-ghost" id="admTokoModalCancel">Batal</button>
+          <button class="adm-btn adm-btn-primary" id="admTokoModalSave">Simpan Toko</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal: Tambah Produk ke toko ===== -->
+    <div class="adm-modal-backdrop" id="admProdukModalBackdrop">
+      <div class="adm-modal adm-modal-sm">
+        <div class="adm-modal-head">
+          <div><h3>Tambah Produk</h3><p id="admProdukModalSubtitle">untuk toko</p></div>
+          <button class="adm-modal-close" id="admProdukModalClose">✕</button>
+        </div>
+        <div class="adm-modal-body">
+          <div class="adm-field">
+            <label>Nama Produk<span class="adm-req">*</span></label>
+            <input type="text" id="admFNewProduk" list="admProdukList2" placeholder="cth. CAT KAYU">
+            <datalist id="admProdukList2"></datalist>
+          </div>
+        </div>
+        <div class="adm-modal-foot">
+          <button class="adm-btn adm-btn-ghost" id="admProdukModalCancel">Batal</button>
+          <button class="adm-btn adm-btn-primary" id="admProdukModalSave">Tambahkan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal: Edit nama produk ===== -->
+    <div class="adm-modal-backdrop" id="admEditProdukModalBackdrop">
+      <div class="adm-modal adm-modal-sm">
+        <div class="adm-modal-head">
+          <div><h3>Edit Nama Produk</h3></div>
+          <button class="adm-modal-close" id="admEditProdukModalClose">✕</button>
+        </div>
+        <div class="adm-modal-body">
+          <div class="adm-field">
+            <label>Nama Produk<span class="adm-req">*</span></label>
+            <input type="text" id="admFEditProduk" list="admProdukList3" placeholder="Nama produk">
+            <datalist id="admProdukList3"></datalist>
+          </div>
+        </div>
+        <div class="adm-modal-foot">
+          <button class="adm-btn adm-btn-ghost" id="admEditProdukModalCancel">Batal</button>
+          <button class="adm-btn adm-btn-primary" id="admEditProdukModalSave">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal: Konfirmasi hapus ===== -->
+    <div class="adm-modal-backdrop" id="admConfirmModalBackdrop">
+      <div class="adm-modal adm-modal-sm">
+        <div class="adm-confirm-icon">🗑</div>
+        <div class="adm-confirm-body">
+          <h3 id="admConfirmTitle">Hapus data ini?</h3>
+          <p id="admConfirmMsg">Tindakan ini tidak bisa dibatalkan.</p>
+        </div>
+        <div class="adm-modal-foot">
+          <button class="adm-btn adm-btn-ghost" id="admConfirmCancelBtn">Batal</button>
+          <button class="adm-btn adm-btn-danger" id="admConfirmDeleteBtn">Ya, Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Modal: Ganti Password ===== -->
+    <div class="adm-modal-backdrop" id="admChangePassBackdrop">
+      <div class="adm-modal adm-modal-sm">
+        <div class="adm-modal-head">
+          <div>
+            <h3>Ganti Password</h3>
+            <p>Masukkan password lama dan password baru</p>
+          </div>
+          <button class="adm-modal-close" id="admChangePassClose">✕</button>
+        </div>
+        <div class="adm-modal-body">
+          <div class="adm-field">
+            <label>Password lama<span class="adm-req">*</span></label>
+            <input type="password" id="admOldPassword" placeholder="Password saat ini" autocomplete="current-password">
+          </div>
+          <div class="adm-field">
+            <label>Password baru<span class="adm-req">*</span></label>
+            <input type="password" id="admNewPassword" placeholder="Minimal 6 karakter" autocomplete="new-password">
+          </div>
+          <div class="adm-field" style="margin-bottom:0;">
+            <label>Konfirmasi password baru<span class="adm-req">*</span></label>
+            <input type="password" id="admNewPassword2" placeholder="Ulangi password baru" autocomplete="new-password">
+            <div class="adm-auth-error" id="admChangePassError">Password tidak cocok</div>
+          </div>
+        </div>
+        <div class="adm-modal-foot">
+          <button class="adm-btn adm-btn-ghost" id="admChangePassCancel">Batal</button>
+          <button class="adm-btn adm-btn-primary" id="admChangePassSave">Simpan Password</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="adm-toast-stack" id="admToastStack"></div>
 
     <!-- Context menu klik-kanan untuk fitur gambar area (B-spline) -->
     <div id="mapCtxMenu" class="map-ctxmenu">
@@ -2569,85 +2999,19 @@
           );
           clearTimeout(timeoutId);
           if (!res.ok) throw new Error('HTTP ' + res.status);
-          allData = await res.json();
-          if (!Array.isArray(allData)) throw new Error('Format data tidak valid');
+          const resJson = await res.json();
+          // Kompatibel dengan format lama (array langsung) & format baru
+          // dari Code.gs saat ini yang membungkusnya jadi { ok, data }.
+          allData = Array.isArray(resJson) ? resJson : resJson.data;
+          if (!Array.isArray(allData)) throw new Error((resJson && resJson.error) || 'Format data tidak valid');
           localStorage.setItem('nsiData', JSON.stringify(allData));
           localStorage.setItem('nsiDataTime', String(Date.now()));
         }
 
-        // Normalisasi nama kolom sales: script Apps Script sumber data bisa
-        // mengembalikan key JSON dengan format berbeda-beda (salesOk, sales_ok,
-        // "SALES OK", dst) tergantung header di sheet. Dicoba beberapa
-        // kemungkinan nama field, lalu disamakan jadi row.salesOk supaya
-        // seluruh kode di bawah cukup pakai satu nama field saja.
-        const SALES_FIELD_CANDIDATES = ['salesOK', 'salesOk', 'sales_ok', 'SALES OK', 'sales', 'Sales OK', 'salesok', 'namaSales'];
-        allData.forEach(row => {
-          if (row.salesOk) return; // sudah ada dari field asli bernama persis "salesOk"
-          for (const cand of SALES_FIELD_CANDIDATES) {
-            if (row[cand] !== undefined && row[cand] !== null && String(row[cand]).trim() !== '') {
-              row.salesOk = row[cand];
-              return;
-            }
-          }
-        });
-
-        // Daftar nama sales unik (kolom SALES OK), dipakai untuk menu "Sales".
-        salesList = Array.from(new Set(
-          allData.map(r => (r.salesOk || '').trim()).filter(Boolean)
-        )).sort((a, b) => a.localeCompare(b, 'id'));
-
-        // Jumlah toko unik per sales (satu toko bisa punya beberapa baris
-        // produk, jadi dihitung berdasarkan kode/nama+alamat sama seperti
-        // pengelompokan toko di tempat lain) — ditampilkan sebagai badge
-        // "X Toko" di sebelah nama sales pada daftar menu Sales.
-        salesStoreCounts = new Map();
-        {
-          const tokoSetPerSales = new Map();
-          allData.forEach(row => {
-            const namaSales = (row.salesOk || '').trim();
-            if (!namaSales) return;
-            const namaToko = (row.pelanggan || '').trim();
-            const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
-              : (namaToko.toLowerCase() + '|' + (row.alamat || '').toLowerCase());
-            if (!tokoSetPerSales.has(namaSales)) tokoSetPerSales.set(namaSales, new Set());
-            tokoSetPerSales.get(namaSales).add(key);
-          });
-          tokoSetPerSales.forEach((set, namaSales) => salesStoreCounts.set(namaSales, set.size));
-        }
-
-        // Bangun daftar produk secara dinamis dari data, sebagai tambahan
-        // terhadap daftar bawaan, supaya produk baru di sheet otomatis muncul.
-        const produkDariData = new Set(
-          allData.map(r => (r.produk || '').trim()).filter(Boolean)
-        );
-        produkDariData.forEach(p => {
-          if (!productList.includes(p)) productList.push(p);
-        });
-        productList.sort((a, b) => a.localeCompare(b, 'id'));
-
-        // Jumlah toko unik per produk (satu toko yang punya produk sama di
-        // beberapa baris tetap dihitung 1) — ditampilkan sebagai badge
-        // "X Toko" di sebelah nama produk pada daftar menu Produk.
-        productStoreCounts = new Map();
-        {
-          const tokoSetPerProduk = new Map();
-          allData.forEach(row => {
-            const namaProduk = (row.produk || '').trim();
-            if (!namaProduk) return;
-            const namaToko = (row.pelanggan || '').trim();
-            const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
-              : (namaToko.toLowerCase() + '|' + (row.alamat || '').toLowerCase());
-            if (!tokoSetPerProduk.has(namaProduk)) tokoSetPerProduk.set(namaProduk, new Set());
-            tokoSetPerProduk.get(namaProduk).add(key);
-          });
-          tokoSetPerProduk.forEach((set, namaProduk) => productStoreCounts.set(namaProduk, set.size));
-        }
-
-        // Daftar nama toko unik, dipakai untuk autocomplete saat user
-        // mengetik nama toko (bukan cuma nama produk).
-        storeList = Array.from(new Set(
-          allData.map(r => (r.pelanggan || '').trim()).filter(Boolean)
-        )).sort((a, b) => a.localeCompare(b, 'id'));
+        // Normalisasi & bangun ulang seluruh index pencarian dari allData
+        // (dipisah jadi fungsi sendiri supaya bisa dipanggil ulang setelah
+        // ada perubahan dari panel admin, tanpa perlu fetch ulang dari nol).
+        processAllData();
 
         clearInterval(progressInterval);
         progressBar.style.width = '100%';
@@ -2669,6 +3033,119 @@
         loadingText.innerHTML = pesan + "<br><button onclick=\"loadData()\">Coba lagi</button>";
       }
     }
+
+    // Normalisasi kolom + bangun ulang salesList/productList/storeList dkk
+    // dari isi `allData` saat ini. Dipanggil setelah fetch awal (loadData)
+    // maupun setelah refresh data akibat perubahan di panel admin.
+    function processAllData() {
+      // Normalisasi nama kolom sales: script Apps Script sumber data bisa
+      // mengembalikan key JSON dengan format berbeda-beda (salesOk, sales_ok,
+      // "SALES OK", dst) tergantung header di sheet. Dicoba beberapa
+      // kemungkinan nama field, lalu disamakan jadi row.salesOk supaya
+      // seluruh kode di bawah cukup pakai satu nama field saja.
+      const SALES_FIELD_CANDIDATES = ['salesOK', 'salesOk', 'sales_ok', 'SALES OK', 'sales', 'Sales OK', 'salesok', 'namaSales'];
+      allData.forEach(row => {
+        if (row.salesOk) return; // sudah ada dari field asli bernama persis "salesOk"
+        for (const cand of SALES_FIELD_CANDIDATES) {
+          if (row[cand] !== undefined && row[cand] !== null && String(row[cand]).trim() !== '') {
+            row.salesOk = row[cand];
+            return;
+          }
+        }
+      });
+
+      // Daftar nama sales unik (kolom SALES OK), dipakai untuk menu "Sales".
+      salesList = Array.from(new Set(
+        allData.map(r => (r.salesOk || '').trim()).filter(Boolean)
+      )).sort((a, b) => a.localeCompare(b, 'id'));
+
+      // Jumlah toko unik per sales (satu toko bisa punya beberapa baris
+      // produk, jadi dihitung berdasarkan kode/nama+alamat sama seperti
+      // pengelompokan toko di tempat lain) — ditampilkan sebagai badge
+      // "X Toko" di sebelah nama sales pada daftar menu Sales.
+      salesStoreCounts = new Map();
+      {
+        const tokoSetPerSales = new Map();
+        allData.forEach(row => {
+          const namaSales = (row.salesOk || '').trim();
+          if (!namaSales) return;
+          const namaToko = (row.pelanggan || '').trim();
+          const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
+            : (namaToko.toLowerCase() + '|' + (row.alamat || '').toLowerCase());
+          if (!tokoSetPerSales.has(namaSales)) tokoSetPerSales.set(namaSales, new Set());
+          tokoSetPerSales.get(namaSales).add(key);
+        });
+        tokoSetPerSales.forEach((set, namaSales) => salesStoreCounts.set(namaSales, set.size));
+      }
+
+      // Bangun daftar produk secara dinamis dari data, sebagai tambahan
+      // terhadap daftar bawaan, supaya produk baru di sheet otomatis muncul.
+      const produkDariData = new Set(
+        allData.map(r => (r.produk || '').trim()).filter(Boolean)
+      );
+      produkDariData.forEach(p => {
+        if (!productList.includes(p)) productList.push(p);
+      });
+      productList.sort((a, b) => a.localeCompare(b, 'id'));
+
+      // Jumlah toko unik per produk (satu toko yang punya produk sama di
+      // beberapa baris tetap dihitung 1) — ditampilkan sebagai badge
+      // "X Toko" di sebelah nama produk pada daftar menu Produk.
+      productStoreCounts = new Map();
+      {
+        const tokoSetPerProduk = new Map();
+        allData.forEach(row => {
+          const namaProduk = (row.produk || '').trim();
+          if (!namaProduk) return;
+          const namaToko = (row.pelanggan || '').trim();
+          const key = row.kode ? ('kode:' + String(row.kode).toLowerCase())
+            : (namaToko.toLowerCase() + '|' + (row.alamat || '').toLowerCase());
+          if (!tokoSetPerProduk.has(namaProduk)) tokoSetPerProduk.set(namaProduk, new Set());
+          tokoSetPerProduk.get(namaProduk).add(key);
+        });
+        tokoSetPerProduk.forEach((set, namaProduk) => productStoreCounts.set(namaProduk, set.size));
+      }
+
+      // Daftar nama toko unik, dipakai untuk autocomplete saat user
+      // mengetik nama toko (bukan cuma nama produk).
+      storeList = Array.from(new Set(
+        allData.map(r => (r.pelanggan || '').trim()).filter(Boolean)
+      )).sort((a, b) => a.localeCompare(b, 'id'));
+    }
+
+    // Ambil data terbaru dari sheet (tanpa cache) dan perbarui seluruh
+    // tampilan halaman utama (marker, daftar, autocomplete) — dipakai
+    // setelah ada perubahan (tambah/edit/hapus toko) dari panel admin,
+    // supaya halaman utama tidak perlu di-refresh manual lagi.
+    async function refreshPublicData() {
+      try {
+        const res = await fetch(
+          "https://script.google.com/macros/s/AKfycbw6VkzkHTAhyCGlmEBK_WaSO3DVzJGF3Vl95k8MTCtDIsa_zsZ1C0FBHAte74Lj7EEb2Q/exec"
+        );
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const resJson = await res.json();
+        const fresh = Array.isArray(resJson) ? resJson : resJson.data;
+        if (!Array.isArray(fresh)) throw new Error((resJson && resJson.error) || 'Format data tidak valid');
+
+        allData = fresh;
+        localStorage.setItem('nsiData', JSON.stringify(allData));
+        localStorage.setItem('nsiDataTime', String(Date.now()));
+
+        processAllData();
+
+        // Jaga tampilan yang sedang dilihat user: kalau lagi ada pencarian/
+        // filter aktif, jalankan ulang; kalau tidak, kembali ke tampilan
+        // default sesuai chip yang aktif.
+        if (!isSearchEmpty()) {
+          cariProduk();
+        } else {
+          renderDefaultView();
+        }
+      } catch (e) {
+        console.warn('Gagal me-refresh data halaman utama:', e);
+      }
+    }
+
 
     // Kotak pencarian dianggap "kosong" (tidak ada pencarian/filter aktif)
     // kalau teksnya kosong DAN tidak ada produk yang sudah dipilih sebagai
@@ -4767,6 +5244,741 @@
         console.error('onload error:', err);
       }
     };
+
+    /* =====================================================================
+       ADMIN PANEL — dibungkus IIFE supaya semua variabel/fungsi di dalamnya
+       tidak bentrok dengan kode peta di atas.
+       ===================================================================== */
+    (function () {
+      const ADM_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6VkzkHTAhyCGlmEBK_WaSO3DVzJGF3Vl95k8MTCtDIsa_zsZ1C0FBHAte74Lj7EEb2Q/exec";
+      const ADM_PAGE_SIZE = 24;
+
+      // Password & token sekarang dikelola di backend (Script Properties + CacheService).
+      // Default password pertama kali: nsi2026 (otomatis di-set di Apps Script jika belum ada).
+      // Ganti password bisa dari browser (tombol 🔑 di header) atau lewat Script Properties.
+
+      let admRows = [];
+      let admGroups = [];
+      let admFiltered = [];
+      let admVisibleCount = ADM_PAGE_SIZE;
+      let admEditingToko = null;
+      let admProdukTags = [];
+      let admAllProduk = [];
+      let admProdukTokoKey = null;
+      let admEditProdukRow = null;
+      let admEditProdukKey = null;
+      let admConfirmAction = null;
+      let admGeoTimer = null;
+      let admUnlocked = false;
+      let admLoadedOnce = false;
+      let admToken = null; // token sesi admin dari backend (berlaku ~2 jam)
+
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) => (typeof escapeHtml === 'function' ? escapeHtml(s) : String(s ?? ''));
+
+      function admToast(msg, type = 'success') {
+        const stack = $('admToastStack');
+        const el = document.createElement('div');
+        el.className = 'adm-toast' + (type === 'error' ? ' adm-error' : '');
+        el.innerHTML = `<span class="adm-toast-dot"></span><span>${esc(msg)}</span>`;
+        stack.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .25s'; setTimeout(() => el.remove(), 260); }, 2600);
+      }
+
+      /* ---------------------------- API ---------------------------- */
+      async function admApiGet() {
+        const res = await fetch(ADM_SCRIPT_URL, { method: 'GET' });
+        const j = await res.json();
+        const arr = Array.isArray(j) ? j : j.data; // kompatibel dengan format lama & baru
+        if (!Array.isArray(arr)) throw new Error((j && j.error) || 'Format data tidak dikenali');
+        return arr;
+      }
+      async function admApiPost(action, payload = {}) {
+        const body = { action, ...payload };
+        // Semua aksi tulis + auth/changePassword butuh token (kecuali auth itu sendiri)
+        if (action !== 'auth' && admToken) body.token = admToken;
+
+        const res = await fetch(ADM_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // hindari CORS preflight di Apps Script
+          body: JSON.stringify(body)
+        });
+        const j = await res.json();
+        if (!j.ok) {
+          // Token expired / invalid → paksa login ulang
+          const msg = j.error || 'Gagal menyimpan';
+          if (/sesi admin|token|tidak valid|habis/i.test(msg)) {
+            admUnlocked = false;
+            admToken = null;
+            admClosePanel();
+            admOpenAuth();
+            admToast('Sesi admin berakhir. Silakan masuk ulang.', 'error');
+          }
+          throw new Error(msg);
+        }
+        return j.result;
+      }
+
+      /* ---------------------------- Load & group ---------------------------- */
+      async function admLoadData() {
+        $('admLoadingState').classList.remove('adm-hidden');
+        $('admTokoGrid').classList.add('adm-hidden');
+        $('admEmptyState').classList.add('adm-hidden');
+        try {
+          admRows = await admApiGet();
+          admBuildGroups();
+          admPopulateFilters();
+          admPopulateDatalists();
+          admApplyFilters();
+          admLoadedOnce = true;
+        } catch (err) {
+          console.error(err);
+          $('admLoadingState').innerHTML =
+            `<span class="adm-icon2">⚠️</span><p>Gagal memuat data.<br>${esc(err.message)}</p>
+             <button class="adm-btn adm-btn-primary" style="margin-top:14px" id="admRetryBtn">Coba Lagi</button>`;
+          $('admRetryBtn').addEventListener('click', admLoadData);
+          return;
+        }
+        $('admLoadingState').classList.add('adm-hidden');
+      }
+
+      function admBuildGroups() {
+        const map = new Map();
+        admRows.forEach(r => {
+          const noPel = r.noPel !== undefined ? r.noPel : r.NoPel;
+          const key = String(noPel || ('_' + (r.row || Math.random())));
+          if (!map.has(key)) {
+            map.set(key, {
+              key: key, noPel: noPel, pelanggan: r.pelanggan, salesOK: (r.salesOK !== undefined ? r.salesOK : r.salesOk),
+              spv: r.spv, alamat: r.alamat, latitude: r.latitude, longitude: r.longitude, rows: []
+            });
+          }
+          map.get(key).rows.push({ row: r.row, produk: r.produk });
+        });
+        admGroups = Array.from(map.values());
+      }
+
+      function admPopulateFilters() {
+        const sales = new Set(), spv = new Set();
+        admGroups.forEach(g => { if (g.salesOK) sales.add(g.salesOK); if (g.spv) spv.add(g.spv); });
+        admFillSelect('admFilterSales', sales, 'Semua Sales');
+        admFillSelect('admFilterSpv', spv, 'Semua SPV');
+      }
+      function admFillSelect(id, set, allLabel) {
+        const el = $(id);
+        const current = el.value;
+        el.innerHTML = `<option value="">${allLabel}</option>` +
+          Array.from(set).sort().map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+        el.value = current;
+      }
+      function admPopulateDatalists() {
+        const produkSet = new Set(), salesSet = new Set(), spvSet = new Set();
+        admRows.forEach(r => {
+          if (r.produk) produkSet.add(r.produk);
+          const s = r.salesOK !== undefined ? r.salesOK : r.salesOk;
+          if (s) salesSet.add(s);
+          if (r.spv) spvSet.add(r.spv);
+        });
+        const produkOpts = Array.from(produkSet).sort().map(p => `<option value="${esc(p)}">`).join('');
+        ['admProdukList', 'admProdukList2', 'admProdukList3'].forEach(id => $(id).innerHTML = produkOpts);
+        admAllProduk = Array.from(produkSet).sort();
+        $('admSalesList').innerHTML = Array.from(salesSet).sort().map(s => `<option value="${esc(s)}">`).join('');
+        $('admSpvList').innerHTML = Array.from(spvSet).sort().map(s => `<option value="${esc(s)}">`).join('');
+      }
+
+      /* ---------------------------- Filter / sort / render ---------------------------- */
+      function admApplyFilters() {
+        const q = $('admSearchInput').value.trim().toLowerCase();
+        const salesFilter = $('admFilterSales').value;
+        const spvFilter = $('admFilterSpv').value;
+        const sortBy = $('admSortSelect').value;
+
+        admFiltered = admGroups.filter(g => {
+          if (salesFilter && g.salesOK !== salesFilter) return false;
+          if (spvFilter && g.spv !== spvFilter) return false;
+          if (!q) return true;
+          const hay = [g.noPel, g.pelanggan, g.salesOK, g.spv, g.alamat, ...g.rows.map(r => r.produk)]
+            .join(' ').toLowerCase();
+          return hay.includes(q);
+        });
+
+        admFiltered.sort((a, b) => {
+          if (sortBy === 'name-asc') return (a.pelanggan || '').localeCompare(b.pelanggan || '');
+          if (sortBy === 'name-desc') return (b.pelanggan || '').localeCompare(a.pelanggan || '');
+          if (sortBy === 'nopel-desc') return String(b.noPel || '').localeCompare(String(a.noPel || ''), undefined, { numeric: true });
+          if (sortBy === 'produk-desc') return b.rows.length - a.rows.length;
+          return 0;
+        });
+
+        admVisibleCount = ADM_PAGE_SIZE;
+        admRenderStats();
+        admRenderGrid();
+      }
+
+      function admRenderStats() {
+        const totalToko = admGroups.length;
+        const totalSales = new Set(admGroups.map(g => g.salesOK).filter(Boolean)).size;
+        const totalSpv = new Set(admGroups.map(g => g.spv).filter(Boolean)).size;
+        $('admStatsRow').innerHTML = `
+          <div class="adm-stat-chip"><b>${totalToko}</b><span>Toko</span></div>
+          <div class="adm-stat-chip"><b>${totalSales}</b><span>Sales</span></div>
+          <div class="adm-stat-chip"><b>${totalSpv}</b><span>SPV</span></div>`;
+        $('admResultCount').textContent = `${admFiltered.length} toko cocok`;
+      }
+
+      function admRenderGrid() {
+        const grid = $('admTokoGrid');
+        const empty = $('admEmptyState');
+        const loadMoreRow = $('admLoadMoreRow');
+
+        if (!admFiltered.length) {
+          grid.classList.add('adm-hidden');
+          empty.classList.remove('adm-hidden');
+          loadMoreRow.classList.add('adm-hidden');
+          return;
+        }
+        empty.classList.add('adm-hidden');
+        grid.classList.remove('adm-hidden');
+
+        const slice = admFiltered.slice(0, admVisibleCount);
+        grid.innerHTML = slice.map(admCardHtml).join('');
+
+        loadMoreRow.classList.toggle('adm-hidden', admVisibleCount >= admFiltered.length);
+      }
+
+      function admCardHtml(g) {
+        const key = g.key;
+        const mapsUrl = (g.latitude && g.longitude) ? `https://www.google.com/maps?q=${g.latitude},${g.longitude}` : null;
+        const chips = g.rows.map(r => `
+          <span class="adm-chip adm-chip-static">${esc(r.produk || '(tanpa nama)')}</span>`).join('');
+
+        return `
+        <div class="adm-toko-card" data-key="${esc(key)}">
+          <div class="adm-toko-card-head">
+            <div>
+              <span class="adm-toko-id">${esc(g.noPel || '—')}</span>
+              <div class="adm-toko-name">${esc(g.pelanggan || '(Tanpa nama)')}</div>
+            </div>
+            <div class="adm-toko-actions">
+              <button class="adm-icon-btn" data-action="edit-toko" data-key="${esc(key)}" title="Edit toko">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+              </button>
+              <button class="adm-icon-btn adm-danger" data-action="delete-toko" data-key="${esc(key)}" title="Hapus toko">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="adm-toko-badges">
+            ${g.salesOK ? `<span class="adm-badge adm-badge-sales">👤 ${esc(g.salesOK)}</span>` : ''}
+            ${g.spv ? `<span class="adm-badge adm-badge-spv">★ ${esc(g.spv)}</span>` : ''}
+          </div>
+          ${g.alamat ? `
+          <div class="adm-toko-addr">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span>${esc(g.alamat)}${mapsUrl ? ` &nbsp;·&nbsp; <a href="${mapsUrl}" target="_blank" rel="noopener">Lihat peta ↗</a>` : ''}</span>
+          </div>` : ''}
+          ${(g.latitude && g.longitude) ? `<div class="adm-toko-coords">${g.latitude}, ${g.longitude}</div>` : ''}
+          <div class="adm-toko-products">
+            ${chips}
+          </div>
+        </div>`;
+      }
+
+      /* ---------------------------- Modal: Toko ---------------------------- */
+      function admOpenTokoModal(mode, group) {
+        admEditingToko = group || null;
+        const isEdit = mode === 'edit';
+        $('admTokoModalTitle').textContent = isEdit ? 'Edit Toko' : 'Tambah Toko';
+        $('admTokoModalSubtitle').textContent = isEdit ? 'Perbarui informasi toko ini' : 'Isi data toko baru beserta produknya (boleh lebih dari satu)';
+        $('admProdukFieldWrap').style.display = isEdit ? 'none' : 'block';
+        $('admEditProdukWrap').style.display = isEdit ? 'block' : 'none';
+        $('admTokoModalSave').textContent = isEdit ? 'Simpan Perubahan' : 'Simpan Toko';
+
+        $('admFNoPel').value = group ? (group.noPel ?? '') : '';
+        $('admFPelanggan').value = group ? (group.pelanggan || '') : '';
+        $('admFSalesOK').value = group ? (group.salesOK || '') : '';
+        $('admFSpv').value = group ? (group.spv || '') : '';
+        $('admFAlamat').value = group ? (group.alamat || '') : '';
+        $('admFLat').value = group ? (group.latitude ?? '') : '';
+        $('admFLng').value = group ? (group.longitude ?? '') : '';
+        $('admFGeoSearch').value = '';
+        $('admGeoSuggestions').classList.remove('adm-visible');
+
+        admProdukTags = [];
+        $('admFProduk').value = '';
+        admRenderProdukTags();
+        if (isEdit) admRenderEditProdukChips();
+
+        $('admTokoModalBackdrop').classList.add('adm-visible');
+      }
+      function admCloseTokoModal() {
+        $('admTokoModalBackdrop').classList.remove('adm-visible');
+        admEditingToko = null;
+      }
+
+      /* ---- Tag produk (mode Tambah Toko: boleh pilih beberapa produk) ---- */
+      function admRenderProdukTags() {
+        const box = $('admProdukTagList');
+        box.innerHTML = admProdukTags.map((p, i) => `
+          <span class="adm-chip">
+            <span>${esc(p)}</span>
+            <button class="adm-chip-x" type="button" data-tagidx="${i}" title="Hapus">✕</button>
+          </span>`).join('');
+      }
+      function admAddProdukTag() {
+        const input = $('admFProduk');
+        const val = input.value.trim();
+        if (!val) return;
+        if (admProdukTags.some(p => p.toLowerCase() === val.toLowerCase())) {
+          admToast('Produk itu sudah ditambahkan', 'error');
+          input.value = '';
+          return;
+        }
+        admProdukTags.push(val);
+        admRenderProdukTags();
+        input.value = '';
+        input.focus();
+      }
+
+      /* ---- Daftar produk toko di dalam modal Edit Toko ---- */
+      function admRenderEditProdukChips() {
+        const wrap = $('admEditProdukChips');
+        if (!admEditingToko) { wrap.innerHTML = ''; return; }
+        const g = admGroups.find(x => x.key === admEditingToko.key);
+        if (!g) { admCloseTokoModal(); return; }
+        admEditingToko = g;
+        const chips = g.rows.map(r => `
+          <span class="adm-chip">
+            <span class="adm-chip-edit" data-action="edit-produk" data-key="${esc(g.key)}" data-row="${r.row}">${esc(r.produk || '(tanpa nama)')}</span>
+            <button class="adm-chip-x" data-action="delete-produk" data-key="${esc(g.key)}" data-row="${r.row}" title="Hapus produk">✕</button>
+          </span>`).join('');
+        wrap.innerHTML = chips + `<button class="adm-chip-add" type="button" id="admEditAddProdukBtn">+ Produk</button>`;
+      }
+
+      async function admSaveTokoModal() {
+        const pelanggan = $('admFPelanggan').value.trim();
+        if (!pelanggan) { admToast('Nama toko wajib diisi', 'error'); return; }
+
+        const payload = {
+          noPel: $('admFNoPel').value.trim(),
+          pelanggan,
+          salesOK: $('admFSalesOK').value.trim(),
+          spv: $('admFSpv').value.trim(),
+          alamat: $('admFAlamat').value.trim(),
+          latitude: $('admFLat').value.trim(),
+          longitude: $('admFLng').value.trim()
+        };
+
+        const saveBtn = $('admTokoModalSave');
+        const original = saveBtn.textContent;
+        saveBtn.disabled = true; saveBtn.textContent = 'Menyimpan...';
+
+        try {
+          if (admEditingToko) {
+            await admApiPost('updateRows', { rows: admEditingToko.rows.map(r => r.row), fields: payload });
+            admToast('Toko berhasil diperbarui');
+          } else {
+            admAddProdukTag(); // tangkap ketikan yang belum ditekan Enter/Tambah
+            if (!admProdukTags.length) { admToast('Minimal 1 produk wajib diisi', 'error'); saveBtn.disabled = false; saveBtn.textContent = original; return; }
+            let noPelToUse = payload.noPel;
+            for (let i = 0; i < admProdukTags.length; i++) {
+              const res = await admApiPost('addRow', { ...payload, noPel: noPelToUse, produk: admProdukTags[i] });
+              if (i === 0 && res && res.noPel) noPelToUse = res.noPel;
+            }
+            admToast('Toko baru berhasil ditambahkan');
+          }
+          admCloseTokoModal();
+          await admLoadData();
+          refreshPublicData();
+        } catch (err) {
+          admToast(err.message, 'error');
+        } finally {
+          saveBtn.disabled = false; saveBtn.textContent = original;
+        }
+      }
+
+      /* ---------------------------- Modal: Tambah produk ---------------------------- */
+      function admOpenProdukModal(key) {
+        admProdukTokoKey = key;
+        const g = admGroups.find(x => x.key === key);
+        $('admProdukModalSubtitle').textContent = 'untuk ' + (g ? g.pelanggan : '');
+        $('admFNewProduk').value = '';
+        // Sembunyikan dari datalist produk yang toko ini sudah punya, biar tidak dobel
+        const owned = new Set((g ? g.rows : []).map(r => (r.produk || '').trim().toLowerCase()));
+        const opts = admAllProduk.filter(p => !owned.has(p.toLowerCase())).map(p => `<option value="${esc(p)}">`).join('');
+        $('admProdukList2').innerHTML = opts;
+        $('admProdukModalBackdrop').classList.add('adm-visible');
+      }
+      function admCloseProdukModal() {
+        $('admProdukModalBackdrop').classList.remove('adm-visible');
+        admProdukTokoKey = null;
+      }
+      async function admSaveProdukModal() {
+        const produk = $('admFNewProduk').value.trim();
+        if (!produk) { admToast('Nama produk wajib diisi', 'error'); return; }
+        const g = admGroups.find(x => x.key === admProdukTokoKey);
+        if (!g) return;
+        const alreadyHas = g.rows.some(r => (r.produk || '').trim().toLowerCase() === produk.toLowerCase());
+        if (alreadyHas) { admToast('Toko ini sudah punya produk itu', 'error'); return; }
+        const btn = $('admProdukModalSave');
+        btn.disabled = true;
+        try {
+          await admApiPost('addRow', {
+            noPel: g.noPel, pelanggan: g.pelanggan, salesOK: g.salesOK, spv: g.spv,
+            alamat: g.alamat, latitude: g.latitude, longitude: g.longitude, produk
+          });
+          admToast('Produk ditambahkan');
+          admCloseProdukModal();
+          await admLoadData();
+          if ($('admTokoModalBackdrop').classList.contains('adm-visible') && admEditingToko) admRenderEditProdukChips();
+          refreshPublicData();
+        } catch (err) {
+          admToast(err.message, 'error');
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+
+      /* ---------------------------- Modal: Edit nama produk ---------------------------- */
+      function admOpenEditProdukModal(key, row) {
+        const g = admGroups.find(x => x.key === key);
+        const item = g && g.rows.find(r => r.row == row);
+        admEditProdukRow = row;
+        admEditProdukKey = key;
+        $('admFEditProduk').value = item ? item.produk : '';
+        $('admEditProdukModalBackdrop').classList.add('adm-visible');
+      }
+      function admCloseEditProdukModal() {
+        $('admEditProdukModalBackdrop').classList.remove('adm-visible');
+        admEditProdukRow = null;
+        admEditProdukKey = null;
+      }
+      async function admSaveEditProduk() {
+        const val = $('admFEditProduk').value.trim();
+        if (!val) { admToast('Nama produk wajib diisi', 'error'); return; }
+        const g = admGroups.find(x => x.key === admEditProdukKey);
+        if (g) {
+          const dup = g.rows.some(r => r.row != admEditProdukRow && (r.produk || '').trim().toLowerCase() === val.toLowerCase());
+          if (dup) { admToast('Toko ini sudah punya produk itu', 'error'); return; }
+        }
+        const btn = $('admEditProdukModalSave');
+        btn.disabled = true;
+        try {
+          await admApiPost('updateCell', { row: admEditProdukRow, field: 'produk', value: val });
+          admToast('Nama produk diperbarui');
+          admCloseEditProdukModal();
+          await admLoadData();
+          if ($('admTokoModalBackdrop').classList.contains('adm-visible') && admEditingToko) admRenderEditProdukChips();
+          refreshPublicData();
+        } catch (err) {
+          admToast(err.message, 'error');
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      /* ---------------------------- Confirm delete ---------------------------- */
+      function admOpenConfirm(title, msg, action) {
+        $('admConfirmTitle').textContent = title;
+        $('admConfirmMsg').innerHTML = msg;
+        admConfirmAction = action;
+        $('admConfirmModalBackdrop').classList.add('adm-visible');
+      }
+      function admCloseConfirm() {
+        $('admConfirmModalBackdrop').classList.remove('adm-visible');
+        admConfirmAction = null;
+      }
+      async function admRunConfirm() {
+        if (!admConfirmAction) return;
+        const btn = $('admConfirmDeleteBtn');
+        btn.disabled = true; btn.textContent = 'Menghapus...';
+        try {
+          await admConfirmAction();
+          admCloseConfirm();
+          await admLoadData();
+          if ($('admTokoModalBackdrop').classList.contains('adm-visible') && admEditingToko) admRenderEditProdukChips();
+          refreshPublicData();
+        } catch (err) {
+          admToast(err.message, 'error');
+        } finally {
+          btn.disabled = false; btn.textContent = 'Ya, Hapus';
+        }
+      }
+      function admConfirmDeleteToko(key) {
+        const g = admGroups.find(x => x.key === key);
+        if (!g) return;
+        admOpenConfirm(
+          'Hapus toko ini?',
+          `<span class="adm-target-name">${esc(g.pelanggan)}</span> beserta ${g.rows.length} baris produknya akan dihapus permanen dari sheet.`,
+          async () => { await admApiPost('deleteRows', { rows: g.rows.map(r => r.row) }); admToast('Toko dihapus'); }
+        );
+      }
+      function admConfirmDeleteProduk(key, row) {
+        const g = admGroups.find(x => x.key === key);
+        const item = g && g.rows.find(r => r.row == row);
+        const isLast = g && g.rows.length === 1;
+        admOpenConfirm(
+          'Hapus produk ini?',
+          isLast
+            ? `<span class="adm-target-name">${esc(item?.produk)}</span> adalah produk terakhir toko ini — toko akan ikut hilang dari daftar.`
+            : `Produk <span class="adm-target-name">${esc(item?.produk)}</span> akan dihapus dari toko ${esc(g?.pelanggan || '')}.`,
+          async () => { await admApiPost('deleteRows', { rows: [row] }); admToast('Produk dihapus'); }
+        );
+      }
+
+      /* ---------------------------- Geocoding (Nominatim) ---------------------------- */
+      async function admSearchGeo() {
+        const q = $('admFGeoSearch').value.trim();
+        const box = $('admGeoSuggestions');
+        if (!q) { box.classList.remove('adm-visible'); return; }
+        box.innerHTML = '<div class="adm-geo-item">Mencari...</div>';
+        box.classList.add('adm-visible');
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=id&q=${encodeURIComponent(q)}`);
+          const list = await res.json();
+          if (!list.length) { box.innerHTML = '<div class="adm-geo-item">Tidak ditemukan</div>'; return; }
+          box.innerHTML = list.map((r, i) => `<div class="adm-geo-item" data-idx="${i}">${esc(r.display_name)}</div>`).join('');
+          box.dataset.results = JSON.stringify(list);
+        } catch (err) {
+          box.innerHTML = '<div class="adm-geo-item">Gagal mencari, coba lagi</div>';
+        }
+      }
+
+      /* ---------------------------- Password gate (server-side) ---------------------------- */
+      function admOpenAuth() {
+        $('admAuthInput').value = '';
+        $('admAuthError').classList.remove('adm-visible2');
+        $('admAuthBackdrop').classList.add('adm-visible');
+        setTimeout(() => $('admAuthInput').focus(), 50);
+      }
+      function admCloseAuth() {
+        $('admAuthBackdrop').classList.remove('adm-visible');
+      }
+      async function admSubmitAuth() {
+        const val = $('admAuthInput').value;
+        if (!val) {
+          $('admAuthError').textContent = 'Password wajib diisi.';
+          $('admAuthError').classList.add('adm-visible2');
+          return;
+        }
+        const btn = $('admAuthSubmitBtn');
+        btn.disabled = true;
+        $('admAuthError').classList.remove('adm-visible2');
+        try {
+          const result = await admApiPost('auth', { password: val });
+          admToken = result.token;
+          admUnlocked = true;
+          admCloseAuth();
+          admOpenPanel();
+        } catch (err) {
+          $('admAuthError').textContent = err.message || 'Password salah, coba lagi.';
+          $('admAuthError').classList.add('adm-visible2');
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      function admOpenPanel() {
+        $('admPanel').classList.add('adm-visible');
+        if (!admLoadedOnce) admLoadData();
+      }
+      function admClosePanel() {
+        $('admPanel').classList.remove('adm-visible');
+      }
+
+      /* ---------------------------- Ganti Password ---------------------------- */
+      function admOpenChangePass() {
+        $('admOldPassword').value = '';
+        $('admNewPassword').value = '';
+        $('admNewPassword2').value = '';
+        $('admChangePassError').classList.remove('adm-visible2');
+        $('admChangePassBackdrop').classList.add('adm-visible');
+        setTimeout(() => $('admOldPassword').focus(), 50);
+      }
+      function admCloseChangePass() {
+        $('admChangePassBackdrop').classList.remove('adm-visible');
+      }
+      async function admSaveChangePass() {
+        const oldP = $('admOldPassword').value;
+        const newP = $('admNewPassword').value;
+        const newP2 = $('admNewPassword2').value;
+        const errEl = $('admChangePassError');
+        errEl.classList.remove('adm-visible2');
+
+        if (!oldP || !newP || !newP2) {
+          errEl.textContent = 'Semua kolom wajib diisi.';
+          errEl.classList.add('adm-visible2');
+          return;
+        }
+        if (newP.length < 6) {
+          errEl.textContent = 'Password baru minimal 6 karakter.';
+          errEl.classList.add('adm-visible2');
+          return;
+        }
+        if (newP !== newP2) {
+          errEl.textContent = 'Konfirmasi password baru tidak cocok.';
+          errEl.classList.add('adm-visible2');
+          return;
+        }
+        if (oldP === newP) {
+          errEl.textContent = 'Password baru harus berbeda dari password lama.';
+          errEl.classList.add('adm-visible2');
+          return;
+        }
+
+        const btn = $('admChangePassSave');
+        const original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+        try {
+          await admApiPost('changePassword', { oldPassword: oldP, newPassword: newP });
+          admCloseChangePass();
+          admToast('Password berhasil diganti');
+        } catch (err) {
+          errEl.textContent = err.message || 'Gagal mengganti password';
+          errEl.classList.add('adm-visible2');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = original;
+        }
+      }
+
+      /* ---------------------------- Event wiring ---------------------------- */
+      $('admOpenBtn').addEventListener('click', () => { admUnlocked ? admOpenPanel() : admOpenAuth(); });
+      $('admAuthCancelBtn').addEventListener('click', admCloseAuth);
+      $('admAuthSubmitBtn').addEventListener('click', admSubmitAuth);
+      $('admAuthInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') admSubmitAuth(); });
+      $('admAuthBackdrop').addEventListener('click', (e) => { if (e.target.id === 'admAuthBackdrop') admCloseAuth(); });
+      $('admBackBtn').addEventListener('click', admClosePanel);
+
+      // Ganti Password
+      $('admChangePassBtn').addEventListener('click', admOpenChangePass);
+      $('admChangePassClose').addEventListener('click', admCloseChangePass);
+      $('admChangePassCancel').addEventListener('click', admCloseChangePass);
+      $('admChangePassSave').addEventListener('click', admSaveChangePass);
+      $('admChangePassBackdrop').addEventListener('click', (e) => { if (e.target.id === 'admChangePassBackdrop') admCloseChangePass(); });
+      $('admNewPassword2').addEventListener('keydown', (e) => { if (e.key === 'Enter') admSaveChangePass(); });
+
+      $('admSearchInput').addEventListener('input', (e) => {
+        $('admSearchClearBtn').classList.toggle('adm-visible2', !!e.target.value);
+        admApplyFilters();
+      });
+      $('admSearchClearBtn').addEventListener('click', () => {
+        $('admSearchInput').value = '';
+        $('admSearchClearBtn').classList.remove('adm-visible2');
+        admApplyFilters();
+      });
+      $('admFilterSales').addEventListener('change', admApplyFilters);
+      $('admFilterSpv').addEventListener('change', admApplyFilters);
+      $('admSortSelect').addEventListener('change', admApplyFilters);
+      $('admRefreshBtn').addEventListener('click', admLoadData);
+      $('admLoadMoreBtn').addEventListener('click', () => { admVisibleCount += ADM_PAGE_SIZE; admRenderGrid(); });
+
+      $('admAddTokoBtn').addEventListener('click', () => admOpenTokoModal('add', null));
+      $('admTokoModalClose').addEventListener('click', admCloseTokoModal);
+      $('admTokoModalCancel').addEventListener('click', admCloseTokoModal);
+      $('admTokoModalSave').addEventListener('click', admSaveTokoModal);
+      $('admTokoModalBackdrop').addEventListener('click', (e) => { if (e.target.id === 'admTokoModalBackdrop') admCloseTokoModal(); });
+      $('admProdukTagAddBtn').addEventListener('click', admAddProdukTag);
+      // Sales OK & SPV: kosongkan dulu isinya saat difokus, biar daftar lengkap
+      // langsung muncul (bukan cuma yang cocok dengan teks lama) — nilai lama
+      // dikembalikan lagi kalau user keluar dari field tanpa memilih apa-apa.
+      function admEnableFullListOnFocus(inputId) {
+        const el = $(inputId);
+        el.addEventListener('focus', () => {
+          el.dataset.prevValue = el.value;
+          el.value = '';
+        });
+        el.addEventListener('blur', () => {
+          if (!el.value && el.dataset.prevValue) el.value = el.dataset.prevValue;
+          delete el.dataset.prevValue;
+        });
+      }
+      admEnableFullListOnFocus('admFSalesOK');
+      admEnableFullListOnFocus('admFSpv');
+      $('admFProduk').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); admAddProdukTag(); }
+      });
+      $('admProdukTagList').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-tagidx]');
+        if (!btn) return;
+        admProdukTags.splice(Number(btn.dataset.tagidx), 1);
+        admRenderProdukTags();
+      });
+      $('admEditProdukChips').addEventListener('click', (e) => {
+        if (e.target.closest('#admEditAddProdukBtn')) { if (admEditingToko) admOpenProdukModal(admEditingToko.key); return; }
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const key = btn.dataset.key;
+        const row = btn.dataset.row;
+        if (action === 'edit-produk') admOpenEditProdukModal(key, row);
+        else if (action === 'delete-produk') admConfirmDeleteProduk(key, row);
+      });
+      $('admGenNoPelBtn').addEventListener('click', async () => {
+        const btn = $('admGenNoPelBtn');
+        btn.disabled = true;
+        try {
+          const r = await admApiPost('nextNoPel', {});
+          $('admFNoPel').value = r.noPel;
+        } catch (err) { admToast(err.message, 'error'); }
+        finally { btn.disabled = false; }
+      });
+      $('admFGeoSearch').addEventListener('input', () => {
+        clearTimeout(admGeoTimer);
+        admGeoTimer = setTimeout(admSearchGeo, 500);
+      });
+      $('admGeoSearchBtn').addEventListener('click', admSearchGeo);
+      $('admGeoSuggestions').addEventListener('click', (e) => {
+        const item = e.target.closest('.adm-geo-item');
+        if (!item || item.dataset.idx == null) return;
+        const box = $('admGeoSuggestions');
+        const list = JSON.parse(box.dataset.results || '[]');
+        const r = list[parseInt(item.dataset.idx, 10)];
+        if (!r) return;
+        $('admFLat').value = parseFloat(r.lat).toFixed(6);
+        $('admFLng').value = parseFloat(r.lon).toFixed(6);
+        if (!$('admFAlamat').value.trim()) $('admFAlamat').value = r.display_name;
+        box.classList.remove('adm-visible');
+      });
+
+      $('admProdukModalClose').addEventListener('click', admCloseProdukModal);
+      $('admProdukModalCancel').addEventListener('click', admCloseProdukModal);
+      $('admProdukModalSave').addEventListener('click', admSaveProdukModal);
+      $('admProdukModalBackdrop').addEventListener('click', (e) => { if (e.target.id === 'admProdukModalBackdrop') admCloseProdukModal(); });
+
+      $('admEditProdukModalClose').addEventListener('click', admCloseEditProdukModal);
+      $('admEditProdukModalCancel').addEventListener('click', admCloseEditProdukModal);
+      $('admEditProdukModalSave').addEventListener('click', admSaveEditProduk);
+      $('admEditProdukModalBackdrop').addEventListener('click', (e) => { if (e.target.id === 'admEditProdukModalBackdrop') admCloseEditProdukModal(); });
+
+      $('admConfirmCancelBtn').addEventListener('click', admCloseConfirm);
+      $('admConfirmDeleteBtn').addEventListener('click', admRunConfirm);
+      $('admConfirmModalBackdrop').addEventListener('click', (e) => { if (e.target.id === 'admConfirmModalBackdrop') admCloseConfirm(); });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        if ($('admAuthBackdrop').classList.contains('adm-visible')) admCloseAuth();
+        else if ($('admChangePassBackdrop').classList.contains('adm-visible')) admCloseChangePass();
+        else if ($('admConfirmModalBackdrop').classList.contains('adm-visible')) admCloseConfirm();
+        else if ($('admEditProdukModalBackdrop').classList.contains('adm-visible')) admCloseEditProdukModal();
+        else if ($('admProdukModalBackdrop').classList.contains('adm-visible')) admCloseProdukModal();
+        else if ($('admTokoModalBackdrop').classList.contains('adm-visible')) admCloseTokoModal();
+        else if ($('admPanel').classList.contains('adm-visible')) admClosePanel();
+      });
+
+      $('admTokoGrid').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const key = btn.dataset.key;
+        const row = btn.dataset.row;
+
+        if (action === 'edit-toko') admOpenTokoModal('edit', admGroups.find(g => g.key === key));
+        else if (action === 'delete-toko') admConfirmDeleteToko(key);
+      });
+    })();
   </script>
 </body>
 </html>
